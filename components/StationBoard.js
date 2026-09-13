@@ -153,9 +153,9 @@ export default function StationBoard({ onTrackTrain }) {
                 onChange={handleQueryChange}
                 onFocus={() => setShowDropdown(true)}
                 placeholder="Search station by name or code (e.g. NDLS, CSMT, HWH)..."
-                className="rail-input font-medium pr-10"
+                className="rail-input font-medium pr-12"
               />
-              <MapPin size={16} className="absolute right-3 top-3 text-[#94a3b8]" />
+              <MapPin size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
             </div>
 
             {/* Dropdown list */}
