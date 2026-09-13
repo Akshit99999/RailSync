@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { Ticket, Search, AlertCircle, CheckCircle2, User, Calendar, MapPin, Train, Loader2 } from 'lucide-react';
+import CoachLayout from './CoachLayout';
+import BerthMap from './BerthMap';
+import { playRailwayChime } from '@/lib/audio-chime';
 
 export default function PnrSection() {
   const [pnrInput, setPnrInput] = useState('');
@@ -28,6 +31,7 @@ export default function PnrSection() {
 
       if (data.success && data.data) {
         setPnrData(data.data);
+        playRailwayChime();
       } else {
         setErrorMessage(data.error || 'PNR record not found or flushed from IRCTC PRS servers.');
       }
@@ -116,149 +120,148 @@ export default function PnrSection() {
 
       {/* Reservation Chart Output */}
       {pnrData && (
-        <div className="pnr-chart-paper p-5 sm:p-7 rounded-md space-y-6">
-          {/* Chart Header Stamp */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-[#234377]">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <span className="bg-[#ffd200] text-[#050d1c] font-mono font-black text-sm px-2.5 py-0.5 rounded">
-                  PNR: {pnrData.pnr}
-                </span>
-                <span className="text-xs font-mono text-[#94a3b8]">
-                  INDIAN RAILWAYS PASSENGER RESERVATION SYSTEM
-                </span>
+        <div className="space-y-6">
+          <div className="pnr-chart-paper p-5 sm:p-7 rounded-md space-y-6">
+            {/* Chart Header Stamp */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-[#234377]">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <span className="bg-[#ffd200] text-[#050d1c] font-mono font-black text-sm px-2.5 py-0.5 rounded">
+                    PNR: {pnrData.pnr}
+                  </span>
+                  <span className="text-xs font-mono text-[#94a3b8]">
+                    INDIAN RAILWAYS PASSENGER RESERVATION SYSTEM
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-white tracking-wide pt-1">
+                  {pnrData.trainName} ({pnrData.trainNumber})
+                </h3>
               </div>
-              <h3 className="text-xl font-bold text-white tracking-wide pt-1">
-                {pnrData.trainName} ({pnrData.trainNumber})
-              </h3>
-            </div>
 
-            {/* Chart Preparation Status */}
-            <div className="flex items-center gap-2.5 bg-[#050e1d] px-3.5 py-2 rounded border border-[#1e3a6d]">
-              <span className="signal-lamp green signal-pulse"></span>
-              <div className="text-right">
-                <div className="text-[10px] font-mono text-[#94a3b8]">CHARTING STATUS</div>
-                <div className="text-xs font-mono font-bold text-[#10b981]">
-                  {pnrData.chartStatus || 'CHART PREPARED'}
+              {/* Chart Preparation Status */}
+              <div className="flex items-center gap-2.5 bg-[#050e1d] px-3.5 py-2 rounded border border-[#1e3a6d]">
+                <span className="signal-lamp green signal-pulse"></span>
+                <div className="text-right">
+                  <div className="text-[10px] font-mono text-[#94a3b8]">CHARTING STATUS</div>
+                  <div className="text-xs font-mono font-bold text-[#10b981]">
+                    {pnrData.chartStatus || 'CHART PREPARED'}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Journey Specs Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <Calendar size={13} className="text-[#ffd200]" />
-                <span>JOURNEY DATE</span>
+            {/* Journey Specs Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
+                <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
+                  <Calendar size={13} className="text-[#ffd200]" />
+                  <span>JOURNEY DATE</span>
+                </div>
+                <div className="text-sm font-bold text-white font-mono">
+                  {pnrData.doj || '14-Sep-2026'}
+                </div>
               </div>
-              <div className="text-sm font-bold text-white font-mono">
-                {pnrData.doj || '05-Sep-2026'}
+
+              <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
+                <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
+                  <MapPin size={13} className="text-[#10b981]" />
+                  <span>BOARDING POINT</span>
+                </div>
+                <div className="text-sm font-bold text-[#ffd200] font-mono">
+                  {pnrData.boardingPoint || pnrData.fromStation} ({pnrData.fromStationName || ''})
+                </div>
+              </div>
+
+              <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
+                <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
+                  <MapPin size={13} className="text-[#38bdf8]" />
+                  <span>DESTINATION</span>
+                </div>
+                <div className="text-sm font-bold text-white font-mono">
+                  {pnrData.toStation} ({pnrData.toStationName || ''})
+                </div>
+              </div>
+
+              <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
+                <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
+                  <Ticket size={13} className="text-[#f59e0b]" />
+                  <span>BOOKING CLASS</span>
+                </div>
+                <div className="text-sm font-bold text-white font-mono">
+                  {pnrData.reservationClass || '3A (AC 3 Tier)'}
+                </div>
               </div>
             </div>
 
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <MapPin size={13} className="text-[#10b981]" />
-                <span>BOARDING POINT</span>
+            {/* Passenger Berth Details Table */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono text-[#94a3b8]">
+                <span>PASSENGER BERTH ALLOCATION MATRIX</span>
+                <span className="text-[#ffd200]">{pnrData.passengers?.length || 1} PASSENGER(S)</span>
               </div>
-              <div className="text-sm font-bold text-[#ffd200] font-mono">
-                {pnrData.boardingPoint || pnrData.fromStation} ({pnrData.fromStationName || ''})
-              </div>
-            </div>
 
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <MapPin size={13} className="text-[#38bdf8]" />
-                <span>DESTINATION</span>
-              </div>
-              <div className="text-sm font-bold text-white font-mono">
-                {pnrData.toStation} ({pnrData.toStationName || ''})
-              </div>
-            </div>
-
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <Ticket size={13} className="text-[#f59e0b]" />
-                <span>BOOKING CLASS</span>
-              </div>
-              <div className="text-sm font-bold text-white font-mono">
-                {pnrData.reservationClass || '3A (AC 3 Tier)'}
-              </div>
-            </div>
-          </div>
-
-          {/* Passenger Berth Details Table */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs font-mono text-[#94a3b8]">
-              <span>PASSENGER BERTH ALLOCATION MATRIX</span>
-              <span className="text-[#ffd200]">{pnrData.passengers?.length || 1} PASSENGER(S)</span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse font-mono text-xs sm:text-sm">
-                <thead>
-                  <tr className="bg-[#050e1d] text-[#ffd200] border-b border-[#234377]">
-                    <th className="py-2.5 px-3">#</th>
-                    <th className="py-2.5 px-3">BOOKING STATUS</th>
-                    <th className="py-2.5 px-3">CURRENT STATUS</th>
-                    <th className="py-2.5 px-3">COACH</th>
-                    <th className="py-2.5 px-3">BERTH NO</th>
-                    <th className="py-2.5 px-3">BERTH TYPE</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#142646]">
-                  {pnrData.passengers && pnrData.passengers.length > 0 ? (
-                    pnrData.passengers.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-[#0c1e38] transition-colors">
-                        <td className="py-3 px-3 text-[#94a3b8] font-bold">
-                          Passenger {p.number || idx + 1}
-                        </td>
-                        <td className="py-3 px-3 text-[#cbd5e1]">
-                          {p.bookingStatus || 'CNF'}
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded bg-[#064e3b] text-[#6ee7b7] font-bold border border-[#059669]">
-                            {p.currentStatus || 'CONFIRMED'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-[#ffd200] font-black text-base">
-                          {p.coach || '--'}
-                        </td>
-                        <td className="py-3 px-3 text-white font-black text-base">
-                          {p.berth || '--'}
-                        </td>
-                        <td className="py-3 px-3 text-[#93c5fd]">
-                          {p.berthType || 'LOWER BERTH (LB)'}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse font-mono text-xs sm:text-sm">
+                  <thead>
+                    <tr className="bg-[#050e1d] text-[#ffd200] border-b border-[#234377]">
+                      <th className="py-2.5 px-3">#</th>
+                      <th className="py-2.5 px-3">BOOKING STATUS</th>
+                      <th className="py-2.5 px-3">CURRENT STATUS</th>
+                      <th className="py-2.5 px-3">COACH</th>
+                      <th className="py-2.5 px-3">BERTH NO</th>
+                      <th className="py-2.5 px-3">BERTH TYPE</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#142646]">
+                    {pnrData.passengers && pnrData.passengers.length > 0 ? (
+                      pnrData.passengers.map((p, idx) => (
+                        <tr key={idx} className="hover:bg-[#0c1e38] transition-colors">
+                          <td className="py-3 px-3 text-[#94a3b8] font-bold">
+                            Passenger {p.number || idx + 1}
+                          </td>
+                          <td className="py-3 px-3 text-[#cbd5e1]">
+                            {p.bookingStatus || 'CNF'}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 rounded bg-[#064e3b] text-[#6ee7b7] font-bold border border-[#059669]">
+                              {p.currentStatus || 'CONFIRMED'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-[#ffd200] font-black text-base">
+                            {p.coach || '--'}
+                          </td>
+                          <td className="py-3 px-3 text-white font-black text-base">
+                            {p.berth || '--'}
+                          </td>
+                          <td className="py-3 px-3 text-[#93c5fd]">
+                            {p.berthType || 'LOWER BERTH (LB)'}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-4 text-center text-[#94a3b8]">
+                          Passenger details not available
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="py-4 text-center text-[#94a3b8]">
-                        Passenger details not available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          {/* Coach Berth Visual Key */}
-          <div className="bg-[#050e1d] p-4 rounded border border-[#142646] space-y-2">
-            <div className="text-xs font-mono text-[#ffd200] font-bold">
-              BERTH CODE GUIDE (INDIAN RAILWAYS STANDARD)
-            </div>
-            <div className="flex flex-wrap gap-4 text-xs font-mono text-[#94a3b8]">
-              <span><strong className="text-white">LB:</strong> Lower Berth</span>
-              <span><strong className="text-white">MB:</strong> Middle Berth</span>
-              <span><strong className="text-white">UB:</strong> Upper Berth</span>
-              <span><strong className="text-white">SL:</strong> Side Lower</span>
-              <span><strong className="text-white">SU:</strong> Side Upper</span>
-              <span><strong className="text-white">SM:</strong> Side Middle</span>
-            </div>
-          </div>
+          {/* Feature: Visual Coach Position & Train Rake Diagram */}
+          <CoachLayout
+            rakeComposition={pnrData.rakeComposition || ['LOCO', 'EOG', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'PC', 'A1', 'A2', 'H1', 'EOG']}
+            highlightCoach={pnrData.coachPosition || pnrData.passengers?.[0]?.coach || 'B3'}
+          />
+
+          {/* Feature: Interactive Compartment Bay Schematic */}
+          <BerthMap
+            passengers={pnrData.passengers || []}
+            coach={pnrData.coachPosition || pnrData.passengers?.[0]?.coach || 'B3'}
+          />
         </div>
       )}
     </div>
