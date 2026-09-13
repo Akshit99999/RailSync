@@ -19,37 +19,72 @@ export default function TrackMap({ trainData }) {
       L = (await import('leaflet')).default;
       if (!isMounted || !mapContainerRef.current) return;
 
-      // Clean up previous map if exists
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+      // Patch Leaflet getPosition defensively to prevent 'undefined is not an object (evaluating el._leaflet_pos)'
+      if (L && L.DomUtil && !L.DomUtil._safePositionPatched) {
+        const origGetPosition = L.DomUtil.getPosition;
+        L.DomUtil.getPosition = function (el) {
+          if (!el) return new L.Point(0, 0);
+          return origGetPosition.call(L.DomUtil, el) || new L.Point(0, 0);
+        };
+        L.DomUtil._safePositionPatched = true;
       }
 
-      // Default center: Central India / Route midpoint
-      const defaultCenter = trainData?.coordinates
-        ? [trainData.coordinates.lat, trainData.coordinates.lng]
-        : [23.5, 78.0];
+      // Initialize map instance only once
+      let map = mapInstanceRef.current;
+      if (!map) {
+        // Clean container._leaflet_id if stale
+        if (mapContainerRef.current._leaflet_id) {
+          delete mapContainerRef.current._leaflet_id;
+        }
 
-      const map = L.map(mapContainerRef.current, {
-        center: defaultCenter,
-        zoom: 6,
-        zoomControl: true,
-        scrollWheelZoom: true,
-      });
+        // Default center: Central India / Route midpoint
+        const defaultCenter = trainData?.coordinates
+          ? [trainData.coordinates.lat, trainData.coordinates.lng]
+          : [23.5, 78.0];
 
-      // CartoDB Dark Matter / High Contrast Railway Tile Layer
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; Indian Railways Open Data',
-        subdomains: 'abcd',
-        maxZoom: 19
-      }).addTo(map);
+        map = L.map(mapContainerRef.current, {
+          center: defaultCenter,
+          zoom: 6,
+          zoomControl: true,
+          scrollWheelZoom: true,
+        });
 
-      mapInstanceRef.current = map;
+        // CartoDB Dark Matter / High Contrast Railway Tile Layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; Indian Railways Open Data',
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(map);
+
+        mapInstanceRef.current = map;
+      }
+
+      if (!isMounted) return;
+
+      // Stop any running animations
+      try {
+        map.stop();
+      } catch (err) {}
+
+      // Clear existing markers & layers
+      if (markersRef.current && markersRef.current.length > 0) {
+        markersRef.current.forEach((m) => {
+          try { m.remove(); } catch (e) {}
+        });
+        markersRef.current = [];
+      }
+      if (polylineRef.current) {
+        try { polylineRef.current.remove(); } catch (e) {}
+        polylineRef.current = null;
+      }
+      if (trainMarkerRef.current) {
+        try { trainMarkerRef.current.remove(); } catch (e) {}
+        trainMarkerRef.current = null;
+      }
 
       // Plot route stations and polyline
       if (trainData?.route && trainData.route.length > 0) {
         const latLngs = [];
-        markersRef.current = [];
 
         trainData.route.forEach((stn) => {
           if (stn.lat && stn.lng) {
@@ -120,7 +155,9 @@ export default function TrackMap({ trainData }) {
             lineJoin: 'round'
           }).addTo(map);
 
-          map.fitBounds(latLngs, { padding: [40, 40] });
+          try {
+            map.fitBounds(latLngs, { padding: [40, 40], animate: false });
+          } catch (e) {}
         }
       }
 
@@ -185,7 +222,10 @@ export default function TrackMap({ trainData }) {
     return () => {
       isMounted = false;
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.stop();
+          mapInstanceRef.current.remove();
+        } catch (e) {}
         mapInstanceRef.current = null;
       }
     };
