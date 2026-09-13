@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Train, RefreshCw, AlertCircle, Clock, Navigation, Gauge, MapPin, CheckCircle, Radio } from 'lucide-react';
+import { Train, RefreshCw, AlertCircle, Clock, Navigation, Gauge, MapPin, CheckCircle, Radio, Volume2 } from 'lucide-react';
 import RouteRibbon from './RouteRibbon';
+import CoachLayout from './CoachLayout';
+import { playRailwayChime } from '@/lib/audio-chime';
 
-// Dynamically import Leaflet TrackMap with SSR disabled to prevent window object errors
+// Dynamically import Leaflet TrackMap with SSR disabled
 const TrackMap = dynamic(() => import('./TrackMap'), {
   ssr: false,
   loading: () => (
@@ -42,6 +44,7 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
       if (data.success && data.data) {
         setTrainData(data.data);
         setLastRefreshed(new Date().toLocaleTimeString('en-IN', { hour12: false }));
+        playRailwayChime();
       } else {
         setErrorMessage(data.error || 'Live tracking data unavailable for this train number.');
       }
@@ -262,22 +265,29 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
 
       {/* Hero Dual-Pane View: Map + Route Ribbon */}
       {trainData && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Map Column (7 cols) */}
-          <div className="lg:col-span-7 space-y-2">
-            <TrackMap trainData={trainData} />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Map Column (7 cols) */}
+            <div className="lg:col-span-7 space-y-2">
+              <TrackMap trainData={trainData} />
+            </div>
+
+            {/* Route Ribbon Column (5 cols) */}
+            <div className="lg:col-span-5 h-[540px]">
+              <RouteRibbon
+                route={trainData.route || []}
+                lastReportedStation={trainData.lastReportedStation}
+                nextStation={trainData.nextStation}
+                speed={trainData.speed}
+                delayMinutes={trainData.delayMinutes}
+              />
+            </div>
           </div>
 
-          {/* Route Ribbon Column (5 cols) */}
-          <div className="lg:col-span-5 h-[540px]">
-            <RouteRibbon
-              route={trainData.route || []}
-              lastReportedStation={trainData.lastReportedStation}
-              nextStation={trainData.nextStation}
-              speed={trainData.speed}
-              delayMinutes={trainData.delayMinutes}
-            />
-          </div>
+          {/* Train Rake Composition Layout */}
+          <CoachLayout
+            rakeComposition={trainData.rakeComposition || ['LOCO', 'EOG', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'PC', 'A1', 'A2', 'H1', 'EOG']}
+          />
         </div>
       )}
     </div>
