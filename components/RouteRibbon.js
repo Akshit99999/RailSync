@@ -37,17 +37,13 @@ export default function RouteRibbon({ route = [], lastReportedStation, nextStati
           const isNext = station.code === nextStation;
 
           // Signal aspect
-          let signalColor = 'text-[#10b981]';
           let lampClass = 'green';
           if (!isDeparted) {
             if (station.delay > 20) {
-              signalColor = 'text-[#ef4444]';
               lampClass = 'red';
             } else if (station.delay > 5) {
-              signalColor = 'text-[#f59e0b]';
               lampClass = 'amber';
             } else {
-              signalColor = 'text-[#10b981]';
               lampClass = 'green';
             }
           }
@@ -71,11 +67,16 @@ export default function RouteRibbon({ route = [], lastReportedStation, nextStati
                     <span className="font-bold text-white text-sm sm:text-base">
                       {station.name}
                     </span>
+                    {station.halt && (
+                      <span className="text-[10px] font-mono bg-[#142646] text-[#93c5fd] px-1.5 py-0.5 rounded">
+                        {station.halt}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="bg-[#030914] text-[#ffd200] px-2 py-0.5 rounded text-xs font-mono border border-[#ffd200]/30 font-semibold">
-                      PLATFORM {station.platform || '--'}
+                      PF {station.platform || '--'}
                     </span>
                     <span className={`signal-lamp ${lampClass} ${isCurrent ? 'signal-pulse' : ''}`}></span>
                   </div>
