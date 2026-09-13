@@ -201,9 +201,9 @@ export default function SearchSection({ onTrackTrain }) {
                     onChange={handleFromChange}
                     onFocus={() => setShowFromDropdown(true)}
                     placeholder="Enter station name or code..."
-                    className="rail-input font-medium pr-10"
+                    className="rail-input font-medium pr-12"
                   />
-                  <MapPin size={16} className="absolute right-3 top-3 text-[#94a3b8]" />
+                  <MapPin size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
                 </div>
 
                 {/* Autocomplete Dropdown */}
@@ -254,9 +254,9 @@ export default function SearchSection({ onTrackTrain }) {
                     onChange={handleToChange}
                     onFocus={() => setShowToDropdown(true)}
                     placeholder="Enter station name or code..."
-                    className="rail-input font-medium pr-10"
+                    className="rail-input font-medium pr-12"
                   />
-                  <MapPin size={16} className="absolute right-3 top-3 text-[#94a3b8]" />
+                  <MapPin size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
                 </div>
 
                 {/* Autocomplete Dropdown */}
@@ -357,9 +357,9 @@ export default function SearchSection({ onTrackTrain }) {
                     value={trainNumberInput}
                     onChange={(e) => setTrainNumberInput(e.target.value)}
                     placeholder="e.g. 12952 (Tejas Rajdhani), 22436 (Vande Bharat)..."
-                    className="rail-input font-mono text-base font-bold tracking-widest pl-10 uppercase"
+                    className="rail-input font-mono text-base font-bold tracking-widest pl-12 pr-4 uppercase"
                   />
-                  <Train size={18} className="absolute left-3 top-3 text-[#ffd200]" />
+                  <Train size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#ffd200] pointer-events-none" />
                 </div>
                 <button type="submit" className="rail-btn-primary">
                   <Train size={16} />
