@@ -56,13 +56,8 @@ export default function TrackMap({ trainData }) {
             const point = [stn.lat, stn.lng];
             latLngs.push(point);
 
-            // Determine signal aspect color
-            let signalClass = 'green';
-            if (stn.status === 'upcoming') {
-              signalClass = stn.delay > 20 ? 'red' : (stn.delay > 5 ? 'amber' : 'green');
-            }
-
             const isCurrent = trainData.lastReportedStation === stn.code;
+            const isNext = trainData.nextStation === stn.code;
 
             // Station Marker HTML
             const stationIcon = L.divIcon({
@@ -70,22 +65,22 @@ export default function TrackMap({ trainData }) {
               html: `
                 <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
                   <div style="
-                    width: ${isCurrent ? '16px' : '10px'};
-                    height: ${isCurrent ? '16px' : '10px'};
+                    width: ${isCurrent ? '18px' : isNext ? '14px' : '10px'};
+                    height: ${isCurrent ? '18px' : isNext ? '14px' : '10px'};
                     border-radius: 50%;
-                    background: ${isCurrent ? '#ffd200' : (stn.status === 'departed' ? '#10b981' : '#64748b')};
+                    background: ${isCurrent ? '#ffd200' : isNext ? '#38bdf8' : (stn.status === 'departed' ? '#10b981' : '#64748b')};
                     border: 2px solid #050d1c;
-                    box-shadow: 0 0 ${isCurrent ? '12px #ffd200' : '6px rgba(0,0,0,0.8)'};
+                    box-shadow: 0 0 ${isCurrent ? '14px #ffd200' : isNext ? '10px #38bdf8' : '6px rgba(0,0,0,0.8)'};
                   "></div>
                   <div style="
                     margin-top: 3px;
                     background: #091730;
-                    border: 1px solid ${isCurrent ? '#ffd200' : '#1e3a6d'};
-                    color: ${isCurrent ? '#ffd200' : '#f1f5f9'};
+                    border: 1px solid ${isCurrent ? '#ffd200' : isNext ? '#38bdf8' : '#1e3a6d'};
+                    color: ${isCurrent ? '#ffd200' : isNext ? '#38bdf8' : '#f1f5f9'};
                     font-family: monospace;
                     font-weight: 700;
                     font-size: 10px;
-                    padding: 1px 4px;
+                    padding: 1px 5px;
                     border-radius: 2px;
                     white-space: nowrap;
                     text-shadow: 0 1px 2px #000;
@@ -94,20 +89,20 @@ export default function TrackMap({ trainData }) {
                   </div>
                 </div>
               `,
-              iconSize: [40, 30],
-              iconAnchor: [20, 8]
+              iconSize: [44, 32],
+              iconAnchor: [22, 9]
             });
 
             const marker = L.marker(point, { icon: stationIcon }).addTo(map);
             marker.bindPopup(`
-              <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 180px;">
+              <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 200px;">
                 <div style="font-weight: 800; font-size: 13px; color: #ffd200; border-bottom: 1px solid #1e3a6d; padding-bottom: 4px; margin-bottom: 4px;">
                   ${stn.name} (${stn.code})
                 </div>
-                <div>Platform: <strong style="color: #ffd200;">${stn.platform || 'TBD'}</strong></div>
-                <div>Sch Arrival: <strong>${stn.scheduledArrival}</strong> | Sch Dep: <strong>${stn.scheduledDeparture}</strong></div>
+                <div>Platform: <strong style="color: #ffd200;">${stn.platform || 'TBD'}</strong> ${stn.halt ? `• Halt: <strong style="color: #93c5fd;">${stn.halt}</strong>` : ''}</div>
+                <div>Sch Arr: <strong>${stn.scheduledArrival}</strong> | Sch Dep: <strong>${stn.scheduledDeparture}</strong></div>
                 <div>Status: <span style="color: ${stn.status === 'departed' ? '#10b981' : '#f59e0b'}; font-weight: bold; text-transform: uppercase;">${stn.status}</span></div>
-                ${stn.delay > 0 ? `<div style="color: #f59e0b; font-weight: bold; margin-top: 2px;">Delay: ${stn.delay} mins</div>` : '<div style="color: #10b981;">Right Time</div>'}
+                ${stn.delay > 0 ? `<div style="color: #f59e0b; font-weight: bold; margin-top: 2px;">Delay: +${stn.delay} mins</div>` : '<div style="color: #10b981; font-weight: bold;">Right Time (RT)</div>'}
               </div>
             `);
             markersRef.current.push(marker);
@@ -129,9 +124,10 @@ export default function TrackMap({ trainData }) {
         }
       }
 
-      // Add Glowing Active Locomotive Marker
+      // Add Glowing Active Locomotive Marker with Directional Bearing
       if (trainData?.coordinates) {
         const trainPos = [trainData.coordinates.lat, trainData.coordinates.lng];
+        const bearing = trainData.bearing || 180;
         
         const locomotiveIcon = L.divIcon({
           className: 'custom-loco-icon',
@@ -140,42 +136,45 @@ export default function TrackMap({ trainData }) {
               <!-- Radar Ping Effect -->
               <div style="
                 position: absolute;
-                width: 38px;
-                height: 38px;
+                width: 44px;
+                height: 44px;
                 border-radius: 50%;
-                background: rgba(255, 210, 0, 0.25);
+                background: rgba(255, 210, 0, 0.22);
                 border: 1.5px solid #ffd200;
                 animation: signalPulse 2s infinite ease-in-out;
               "></div>
-              <!-- Engine Cabin Badge -->
+              <!-- Engine Cabin Badge with Directional Compass -->
               <div style="
-                width: 26px;
-                height: 26px;
+                width: 30px;
+                height: 30px;
                 border-radius: 50%;
                 background: #ffd200;
                 color: #050d1c;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 13px;
-                box-shadow: 0 0 16px rgba(255, 210, 0, 0.9), inset 0 0 4px #fff;
-                border: 2px solid #050d1c;
+                font-size: 14px;
+                box-shadow: 0 0 18px rgba(255, 210, 0, 0.95), inset 0 0 4px #fff;
+                border: 2.5px solid #050d1c;
                 z-index: 10;
+                transform: rotate(${bearing - 90}deg);
+                transition: transform 0.5s ease;
               ">
                 🚂
               </div>
             </div>
           `,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20]
+          iconSize: [44, 44],
+          iconAnchor: [22, 22]
         });
 
         trainMarkerRef.current = L.marker(trainPos, { icon: locomotiveIcon, zIndexOffset: 1000 }).addTo(map);
         trainMarkerRef.current.bindPopup(`
-          <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9;">
-            <div style="font-weight: bold; color: #ffd200; font-size: 14px;">${trainData.trainName}</div>
-            <div style="margin-top: 4px; font-weight: 600;">Speed: <span style="color: #10b981;">${trainData.speed || '110 km/h'}</span></div>
-            <div>Status: <span style="color: #f1f5f9;">${trainData.currentStatus}</span></div>
+          <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 200px;">
+            <div style="font-weight: bold; color: #ffd200; font-size: 13px;">${trainData.trainName}</div>
+            <div style="margin-top: 4px; font-weight: 600;">Speed: <span style="color: #10b981;">${trainData.speed || '112 km/h'}</span></div>
+            <div>Bearing: <span style="color: #38bdf8;">${bearing}° heading</span></div>
+            <div style="margin-top: 2px;">Status: <span style="color: #f1f5f9;">${trainData.currentStatus}</span></div>
           </div>
         `);
       }
