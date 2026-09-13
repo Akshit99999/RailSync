@@ -1,31 +1,42 @@
 # RailSync 🚂 — Indian Railways Live Tracker & PNR Status
 
-A high-fidelity Indian Railways tracking interface built with Next.js (App Router), plain JavaScript, CSS, and Leaflet.js. 
+A high-fidelity Indian Railways tracking interface built with Next.js (App Router), plain JavaScript, Tailwind CSS, and Leaflet.js. 
 
-Designed specifically around the authentic visual and physical world of Indian Railways: platform signboards, 3-aspect railway signal lights, track tie ribbons, and IRCTC reservation charts.
+Designed specifically around the authentic visual and physical world of Indian Railways: platform electronic display boards, 3-aspect railway signal lights, track tie ribbons, train rake composition, compartment berth cutaways, and IRCTC reservation charts.
 
 ---
 
-## 📸 Key Features
+## 📸 Core Features
 
-1. **Station & Train Search (Inquiry Terminal)**
-   - Autocomplete station search with station codes (`NDLS`, `MMCT`, `HWH`, `MAS`, `SBC`, etc.).
-   - Station swap control.
-   - 5-digit direct train number lookup.
-   - Instant live running status launch.
+1. **Station & Train Search Terminal**
+   - Instant station lookup across major junctions in all 17 Indian Railway zones.
+   - Origin / Destination station swap control.
+   - Quick Hot Route presets (`NDLS → MMCT`, `NDLS → BSB`, `NDLS → HWH`, `MAS → SBC`).
+   - 5-digit direct train number lookup with audio chime feedback.
 
-2. **Live Train Tracking View (Hero View)**
+2. **Hero Live Train Tracking View**
    - Real-time corridor map powered by **Leaflet.js** with dark high-contrast railway styling.
-   - Active locomotive marker with radar-ping telemetry.
-   - **Permanent Way Route Ribbon (Timeline):** Vertical rail line with physical sleeper ties, platform numbers, scheduled vs actual arrival/departure, and dynamic signal aspect pips (Green = Line Clear, Amber = Caution/Delay, Red = Severe Delay).
-   - Telemetry HUD: speed, last reported station, next stop, progress, and delay metrics.
-   - Auto-refresh (30s) and manual sync.
+   - **Directional Locomotive Marker:** Rotates according to the train's live geographic bearing towards the destination.
+   - **Linear Permanent Way Route Ribbon:** Vertical rail line with physical sleeper ties, platform numbers, halt durations, and dynamic signal aspect pips (Green = Line Clear, Amber = Caution/Delay, Red = Severe Delay).
+   - Telemetry HUD: speed, last reported station, next stop, progress counter, and auto-refresh (every 30s) or manual sync.
+   - **Train Rake Composition:** Full train coach sequence from WAP-7 locomotive to rear guard van.
 
-3. **PNR Status Checker (PRS Chart)**
-   - 10-digit PNR validator.
-   - Styled after the printed dot-matrix reservation charts pasted on train coach doors.
-   - Passenger berth allocation table (Coach, Berth Number, Berth Type like `LB`, `MB`, `UB`, `SL`, `SU`).
-   - Charting status badge (`CHART PREPARED`).
+3. **Station Live Board (Arrivals & Departures)**
+   - Electronic departure/arrival board styled after real platform LED matrix boards.
+   - Time window selection: Next 2 Hours, 4 Hours, or 8 Hours.
+   - Filter by Departures, Arrivals, or All movements.
+   - Direct 1-click "Track" button to jump into live telemetry.
+
+4. **PNR Status Checker & Coach Reservation Chart**
+   - 10-digit PNR validator with preloaded sample test button (`2458910243`).
+   - Charting status banner (`CHART PREPARED`).
+   - Passenger berth allocation table (Coach, Berth Number, Berth Type).
+   - **Visual Coach Layout:** Locomotive-to-guard sequence with passenger's coach highlighted in glowing yellow.
+   - **Interactive Compartment Bay Schematic:** 8-berth cutaway diagram showing exact seat location (Lower Berth window, Middle, Upper, Side Lower, Side Upper).
+
+5. **Audio & Developer Telemetry**
+   - **Iconic Indian Railways Announcement Chime:** Synthesized 4-tone platform chime (`G4 ➔ C5 ➔ D5 ➔ G5`) using browser-native Web Audio API (with on/off mute toggle).
+   - **In-App API Key Manager:** Link and test your RailKit API key directly from the UI header without restarting servers.
 
 ---
 
@@ -44,9 +55,16 @@ Designed specifically around the authentic visual and physical world of Indian R
 
 - **Framework:** Next.js 14 (App Router)
 - **Language:** Plain JavaScript (No TypeScript)
-- **Styling:** Custom CSS with Indian Railways Design System
+- **Styling:** Tailwind CSS + Custom Railway CSS Variables
 - **Mapping:** Leaflet.js with CartoDB Dark Matter tiles
-- **API:** `railkit` with Next.js API route proxying (`/api/live`, `/api/pnr`, `/api/search`, `/api/stations`)
+- **Audio:** Browser Web Audio API (0 external audio assets)
+- **API:** `railkit` with server-side Next.js API route proxies:
+  - `/api/live` — Live train tracking & GPS telemetry
+  - `/api/station-board` — Station arrivals & departures
+  - `/api/pnr` — PNR reservation status
+  - `/api/search` — Direct trains between stations
+  - `/api/stations` — 17-zone station autocomplete
+  - `/api/config` — Live RailKit key validation & session linking
 - **Persistence:** None (DB-less phase; live state held in React)
 
 ---
@@ -63,7 +81,7 @@ Create `.env.local` with your RailKit API key from [railkit.rajivdubey.dev](http
 ```env
 RAILKIT_API_KEY=your_api_key_here
 ```
-*(Note: If no API key is provided, RailSync seamlessly runs on built-in high-fidelity Indian Railways telemetry data for trains like 12952 Tejas Rajdhani, 22436 Vande Bharat, and 12002 Bhopal Shatabdi).*
+*(You can also link your key directly in the web app via the "API KEY" button in the header).*
 
 ### 3. Run Development Server
 ```bash
