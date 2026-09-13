@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, ArrowRightLeft, Train, Calendar, AlertCircle, ArrowRight, MapPin, Loader2 } from 'lucide-react';
+import { playRailwayChime } from '@/lib/audio-chime';
 
 export default function SearchSection({ onTrackTrain }) {
   const [searchMode, setSearchMode] = useState('stations'); // 'stations' | 'number'
@@ -102,6 +103,7 @@ export default function SearchSection({ onTrackTrain }) {
       const data = await res.json();
       if (data.success) {
         setSearchResults(data.data || []);
+        playRailwayChime();
       } else {
         setErrorMessage(data.error || 'No trains found for this route.');
       }
@@ -121,6 +123,7 @@ export default function SearchSection({ onTrackTrain }) {
       return;
     }
     setErrorMessage('');
+    playRailwayChime();
     onTrackTrain(cleanNum);
   };
 
@@ -443,7 +446,7 @@ export default function SearchSection({ onTrackTrain }) {
                       {train.classes.map((cls) => (
                         <span
                           key={cls}
-                          className="px-2 py-0.5 bg-[#050e1c] text-[#93c5fd] font-mono text-[11px] rounded border border-[#1e3a6d]"
+                          className="px-2 py-0.5 bg-[#050e1d] text-[#93c5fd] font-mono text-[11px] rounded border border-[#1e3a6d]"
                         >
                           {cls}
                         </span>
