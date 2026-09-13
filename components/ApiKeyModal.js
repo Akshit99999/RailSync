@@ -140,7 +140,7 @@ export default function ApiKeyModal({ isOpen, onClose }) {
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
               placeholder="Paste your RailKit API key (e.g. rk_live_...)"
-              className="rail-input font-mono text-sm"
+              className="rail-input font-mono text-sm px-3.5 py-2.5"
             />
           </div>
 
