@@ -1,12 +1,23 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Radio, Search, Clock, ArrowRight, RefreshCw, AlertCircle, Train, MapPin, Filter, Volume2 } from 'lucide-react';
+import { Radio, Search, Clock, ArrowRight, RefreshCw, AlertCircle, Train, MapPin, Filter, Volume2, X } from 'lucide-react';
 import { playRailwayChime } from '@/lib/audio-chime';
 
+const POPULAR_BOARD_STATIONS = [
+  { code: 'NDLS', name: 'New Delhi', state: 'Delhi' },
+  { code: 'MMCT', name: 'Mumbai Central', state: 'Maharashtra' },
+  { code: 'HWH', name: 'Howrah Jn', state: 'West Bengal' },
+  { code: 'MAS', name: 'Chennai Central', state: 'Tamil Nadu' },
+  { code: 'SBC', name: 'KSR Bengaluru', state: 'Karnataka' },
+  { code: 'PNBE', name: 'Patna Jn', state: 'Bihar' },
+  { code: 'BSB', name: 'Varanasi Jn', state: 'Uttar Pradesh' },
+  { code: 'CNB', name: 'Kanpur Central', state: 'Uttar Pradesh' }
+];
+
 export default function StationBoard({ onTrackTrain }) {
-  const [stationQuery, setStationQuery] = useState('');
   const [selectedStation, setSelectedStation] = useState({ code: 'NDLS', name: 'New Delhi', state: 'Delhi' });
+  const [stationQuery, setStationQuery] = useState('New Delhi (NDLS)');
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -31,7 +42,7 @@ export default function StationBoard({ onTrackTrain }) {
   }, []);
 
   // Fetch board data
-  const fetchStationBoard = async (stnCode = selectedStation.code, hours = hoursWindow) => {
+  const fetchStationBoard = async (stnCode = selectedStation?.code, hours = hoursWindow) => {
     if (!stnCode) return;
     setIsLoading(true);
     setErrorMessage('');
@@ -55,7 +66,9 @@ export default function StationBoard({ onTrackTrain }) {
   };
 
   useEffect(() => {
-    fetchStationBoard(selectedStation.code, hoursWindow);
+    if (selectedStation?.code) {
+      fetchStationBoard(selectedStation.code, hoursWindow);
+    }
   }, [selectedStation, hoursWindow]);
 
   // Autocomplete search
@@ -82,8 +95,14 @@ export default function StationBoard({ onTrackTrain }) {
 
   const handleSelectStation = (stn) => {
     setSelectedStation(stn);
-    setStationQuery('');
+    setStationQuery(`${stn.name} (${stn.code})`);
     setShowDropdown(false);
+  };
+
+  const handleClearStation = () => {
+    setStationQuery('');
+    setSuggestions([]);
+    setShowDropdown(true);
   };
 
   // Filter trains
@@ -130,8 +149,8 @@ export default function StationBoard({ onTrackTrain }) {
             </div>
 
             <button
-              onClick={() => fetchStationBoard(selectedStation.code, hoursWindow)}
-              disabled={isLoading}
+              onClick={() => fetchStationBoard(selectedStation?.code, hoursWindow)}
+              disabled={isLoading || !selectedStation?.code}
               title="Refresh Display Board"
               className="p-2 rounded bg-[#0b1d3a] hover:bg-[#132c60] border border-[#1e3a6d] text-[#ffd200]"
             >
@@ -149,31 +168,68 @@ export default function StationBoard({ onTrackTrain }) {
             <div className="relative">
               <input
                 type="text"
-                value={stationQuery || `${selectedStation.name} (${selectedStation.code})`}
+                value={stationQuery}
                 onChange={handleQueryChange}
                 onFocus={() => setShowDropdown(true)}
                 placeholder="Search station by name or code (e.g. NDLS, CSMT, HWH)..."
-                className="rail-input font-medium pr-12"
+                className="rail-input font-medium pr-16"
               />
-              <MapPin size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                {stationQuery && (
+                  <button
+                    type="button"
+                    onClick={handleClearStation}
+                    className="text-[#94a3b8] hover:text-white p-0.5 rounded transition-colors"
+                    title="Clear Station"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+                <MapPin size={16} className="text-[#94a3b8] pointer-events-none" />
+              </div>
             </div>
 
             {/* Dropdown list */}
-            {showDropdown && suggestions.length > 0 && (
+            {showDropdown && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-[#091730] border border-[#ffd200] rounded z-30 max-h-60 overflow-y-auto shadow-2xl">
-                {suggestions.map((stn) => (
-                  <div
-                    key={stn.code}
-                    onClick={() => handleSelectStation(stn)}
-                    className="px-3.5 py-2.5 hover:bg-[#132c60] cursor-pointer flex items-center justify-between border-b border-[#142646] last:border-b-0"
-                  >
-                    <div>
-                      <span className="font-semibold text-white text-sm">{stn.name}</span>
-                      <span className="text-xs text-[#94a3b8] ml-2">({stn.state})</span>
+                {suggestions.length > 0 ? (
+                  suggestions.map((stn) => (
+                    <div
+                      key={stn.code}
+                      onClick={() => handleSelectStation(stn)}
+                      className="px-3.5 py-2.5 hover:bg-[#132c60] cursor-pointer flex items-center justify-between border-b border-[#142646] last:border-b-0"
+                    >
+                      <div>
+                        <span className="font-semibold text-white text-sm">{stn.name}</span>
+                        <span className="text-xs text-[#94a3b8] ml-2">({stn.state})</span>
+                      </div>
+                      <span className="station-code-pill text-xs">{stn.code}</span>
                     </div>
-                    <span className="station-code-pill text-xs">{stn.code}</span>
+                  ))
+                ) : !stationQuery.trim() ? (
+                  <div>
+                    <div className="px-3 py-1.5 bg-[#050d1c] text-[10px] font-mono text-[#ffd200] uppercase tracking-wider border-b border-[#142646]">
+                      ★ Popular Stations
+                    </div>
+                    {POPULAR_BOARD_STATIONS.map((stn) => (
+                      <div
+                        key={stn.code}
+                        onClick={() => handleSelectStation(stn)}
+                        className="px-3.5 py-2.5 hover:bg-[#132c60] cursor-pointer flex items-center justify-between border-b border-[#142646] last:border-b-0"
+                      >
+                        <div>
+                          <span className="font-semibold text-white text-sm">{stn.name}</span>
+                          <span className="text-xs text-[#94a3b8] ml-2">({stn.state})</span>
+                        </div>
+                        <span className="station-code-pill text-xs">{stn.code}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="px-3 py-3 text-xs text-[#94a3b8] font-mono text-center">
+                    No stations found matching "{stationQuery}"
+                  </div>
+                )}
               </div>
             )}
           </div>
