@@ -105,7 +105,7 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
               value={trainNumber}
               onChange={(e) => setTrainNumber(e.target.value)}
               placeholder="e.g. 12952"
-              className="rail-input font-mono font-bold tracking-widest text-center w-28 uppercase text-sm py-1.5"
+              className="rail-input font-mono font-bold tracking-widest text-center w-32 uppercase text-sm py-1.5 px-2"
             />
 
             <select
