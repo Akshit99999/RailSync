@@ -70,9 +70,9 @@ export default function PnrSection() {
                 value={pnrInput}
                 onChange={(e) => setPnrInput(e.target.value.replace(/\D/g, ''))}
                 placeholder="e.g. 2458910243"
-                className="rail-input font-mono text-lg font-bold tracking-widest pl-10"
+                className="rail-input font-mono text-lg font-bold tracking-widest pl-12 pr-4 py-2.5"
               />
-              <Ticket size={20} className="absolute left-3 top-3 text-[#ffd200]" />
+              <Ticket size={20} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#ffd200] pointer-events-none" />
             </div>
 
             <button
