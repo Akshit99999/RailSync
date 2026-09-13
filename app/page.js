@@ -4,11 +4,14 @@ import { useState } from 'react';
 import Header from '@/components/Header';
 import SearchSection from '@/components/SearchSection';
 import LiveTracker from '@/components/LiveTracker';
+import StationBoard from '@/components/StationBoard';
 import PnrSection from '@/components/PnrSection';
+import ApiKeyModal from '@/components/ApiKeyModal';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'live' | 'pnr'
+  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'live' | 'station-board' | 'pnr'
   const [activeTrainNumber, setActiveTrainNumber] = useState('12952');
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
   const handleTrackTrain = (trainNumber) => {
     setActiveTrainNumber(trainNumber);
@@ -19,7 +22,11 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-[#050d1c] text-[#f1f5f9]">
       {/* Station Master / Signal Box Header */}
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
@@ -34,10 +41,20 @@ export default function Home() {
           />
         )}
 
+        {activeTab === 'station-board' && (
+          <StationBoard onTrackTrain={handleTrackTrain} />
+        )}
+
         {activeTab === 'pnr' && (
           <PnrSection />
         )}
       </main>
+
+      {/* API Key Modal Drawer */}
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+      />
 
       {/* Railway Platform Bottom Status Bar */}
       <footer className="bg-[#030814] border-t border-[#142646] py-6 text-xs text-[#64748b]">
