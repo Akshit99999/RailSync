@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useTheme } from './ThemeProvider';
 
 export default function TrackMap({ trainData }) {
+  const { theme } = useTheme();
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const markersRef = useRef([]);
   const polylineRef = useRef(null);
   const trainMarkerRef = useRef(null);
@@ -19,72 +22,37 @@ export default function TrackMap({ trainData }) {
       L = (await import('leaflet')).default;
       if (!isMounted || !mapContainerRef.current) return;
 
-      // Patch Leaflet getPosition defensively to prevent 'undefined is not an object (evaluating el._leaflet_pos)'
-      if (L && L.DomUtil && !L.DomUtil._safePositionPatched) {
-        const origGetPosition = L.DomUtil.getPosition;
-        L.DomUtil.getPosition = function (el) {
-          if (!el) return new L.Point(0, 0);
-          return origGetPosition.call(L.DomUtil, el) || new L.Point(0, 0);
-        };
-        L.DomUtil._safePositionPatched = true;
+      // Clean up previous map if exists
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
 
-      // Initialize map instance only once
-      let map = mapInstanceRef.current;
-      if (!map) {
-        // Clean container._leaflet_id if stale
-        if (mapContainerRef.current._leaflet_id) {
-          delete mapContainerRef.current._leaflet_id;
-        }
+      // Default center: Central India / Route midpoint
+      const defaultCenter = trainData?.coordinates
+        ? [trainData.coordinates.lat, trainData.coordinates.lng]
+        : [23.5, 78.0];
 
-        // Default center: Central India / Route midpoint
-        const defaultCenter = trainData?.coordinates
-          ? [trainData.coordinates.lat, trainData.coordinates.lng]
-          : [23.5, 78.0];
+      const map = L.map(mapContainerRef.current, {
+        center: defaultCenter,
+        zoom: 6,
+        zoomControl: true,
+        scrollWheelZoom: true,
+      });
 
-        map = L.map(mapContainerRef.current, {
-          center: defaultCenter,
-          zoom: 6,
-          zoomControl: true,
-          scrollWheelZoom: true,
-        });
+      const isDark = theme === 'dark';
 
-        // CartoDB Dark Matter / High Contrast Railway Tile Layer
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; Indian Railways Open Data',
-          subdomains: 'abcd',
-          maxZoom: 19
-        }).addTo(map);
+      tileLayerRef.current = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors • Indian Railways Telemetry',
+        maxZoom: 19
+      }).addTo(map);
 
-        mapInstanceRef.current = map;
-      }
-
-      if (!isMounted) return;
-
-      // Stop any running animations
-      try {
-        map.stop();
-      } catch (err) {}
-
-      // Clear existing markers & layers
-      if (markersRef.current && markersRef.current.length > 0) {
-        markersRef.current.forEach((m) => {
-          try { m.remove(); } catch (e) {}
-        });
-        markersRef.current = [];
-      }
-      if (polylineRef.current) {
-        try { polylineRef.current.remove(); } catch (e) {}
-        polylineRef.current = null;
-      }
-      if (trainMarkerRef.current) {
-        try { trainMarkerRef.current.remove(); } catch (e) {}
-        trainMarkerRef.current = null;
-      }
+      mapInstanceRef.current = map;
 
       // Plot route stations and polyline
       if (trainData?.route && trainData.route.length > 0) {
         const latLngs = [];
+        markersRef.current = [];
 
         trainData.route.forEach((stn) => {
           if (stn.lat && stn.lng) {
@@ -103,22 +71,22 @@ export default function TrackMap({ trainData }) {
                     width: ${isCurrent ? '18px' : isNext ? '14px' : '10px'};
                     height: ${isCurrent ? '18px' : isNext ? '14px' : '10px'};
                     border-radius: 50%;
-                    background: ${isCurrent ? '#ffd200' : isNext ? '#38bdf8' : (stn.status === 'departed' ? '#10b981' : '#64748b')};
-                    border: 2px solid #050d1c;
-                    box-shadow: 0 0 ${isCurrent ? '14px #ffd200' : isNext ? '10px #38bdf8' : '6px rgba(0,0,0,0.8)'};
+                    background: ${isCurrent ? '#ffd200' : isNext ? '#0284c7' : (stn.status === 'departed' ? '#10b981' : (isDark ? '#52525b' : '#94a3b8'))};
+                    border: 2px solid ${isDark ? '#000000' : '#ffffff'};
+                    box-shadow: 0 0 ${isCurrent ? '14px #ffd200' : isNext ? '10px #0284c7' : '4px rgba(0,0,0,0.4)'};
                   "></div>
                   <div style="
                     margin-top: 3px;
-                    background: #091730;
-                    border: 1px solid ${isCurrent ? '#ffd200' : isNext ? '#38bdf8' : '#1e3a6d'};
-                    color: ${isCurrent ? '#ffd200' : isNext ? '#38bdf8' : '#f1f5f9'};
+                    background: ${isDark ? '#09090b' : '#ffffff'};
+                    border: 1px solid ${isCurrent ? '#ffd200' : isNext ? '#0284c7' : (isDark ? '#27272a' : '#cbd5e1')};
+                    color: ${isCurrent ? (isDark ? '#ffd200' : '#854d0e') : isNext ? '#0284c7' : (isDark ? '#f4f4f5' : '#0f172a')};
                     font-family: monospace;
-                    font-weight: 700;
+                    font-weight: 800;
                     font-size: 10px;
                     padding: 1px 5px;
-                    border-radius: 2px;
+                    border-radius: 3px;
                     white-space: nowrap;
-                    text-shadow: 0 1px 2px #000;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                   ">
                     ${stn.code}
                   </div>
@@ -130,11 +98,11 @@ export default function TrackMap({ trainData }) {
 
             const marker = L.marker(point, { icon: stationIcon }).addTo(map);
             marker.bindPopup(`
-              <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 200px;">
-                <div style="font-weight: 800; font-size: 13px; color: #ffd200; border-bottom: 1px solid #1e3a6d; padding-bottom: 4px; margin-bottom: 4px;">
+              <div style="font-family: system-ui, sans-serif; font-size: 12px; color: ${isDark ? '#f4f4f5' : '#0f172a'}; min-width: 200px;">
+                <div style="font-weight: 800; font-size: 13px; color: ${isDark ? '#ffd200' : '#854d0e'}; border-bottom: 1px solid ${isDark ? '#27272a' : '#e2e8f0'}; padding-bottom: 4px; margin-bottom: 4px;">
                   ${stn.name} (${stn.code})
                 </div>
-                <div>Platform: <strong style="color: #ffd200;">${stn.platform || 'TBD'}</strong> ${stn.halt ? `• Halt: <strong style="color: #93c5fd;">${stn.halt}</strong>` : ''}</div>
+                <div>Platform: <strong style="color: ${isDark ? '#ffd200' : '#b45309'};">${stn.platform || 'TBD'}</strong> ${stn.halt ? `• Halt: <strong style="color: #0284c7;">${stn.halt}</strong>` : ''}</div>
                 <div>Sch Arr: <strong>${stn.scheduledArrival}</strong> | Sch Dep: <strong>${stn.scheduledDeparture}</strong></div>
                 <div>Status: <span style="color: ${stn.status === 'departed' ? '#10b981' : '#f59e0b'}; font-weight: bold; text-transform: uppercase;">${stn.status}</span></div>
                 ${stn.delay > 0 ? `<div style="color: #f59e0b; font-weight: bold; margin-top: 2px;">Delay: +${stn.delay} mins</div>` : '<div style="color: #10b981; font-weight: bold;">Right Time (RT)</div>'}
@@ -147,17 +115,15 @@ export default function TrackMap({ trainData }) {
         // Add track polyline
         if (latLngs.length > 1) {
           polylineRef.current = L.polyline(latLngs, {
-            color: '#ffd200',
+            color: isDark ? '#ffd200' : '#d97706',
             weight: 3.5,
-            opacity: 0.85,
+            opacity: 0.9,
             dashArray: '8, 6',
             lineCap: 'round',
             lineJoin: 'round'
           }).addTo(map);
 
-          try {
-            map.fitBounds(latLngs, { padding: [40, 40], animate: false });
-          } catch (e) {}
+          map.fitBounds(latLngs, { padding: [40, 40] });
         }
       }
 
@@ -176,23 +142,23 @@ export default function TrackMap({ trainData }) {
                 width: 44px;
                 height: 44px;
                 border-radius: 50%;
-                background: rgba(255, 210, 0, 0.22);
+                background: ${isDark ? 'rgba(255, 210, 0, 0.25)' : 'rgba(234, 179, 8, 0.25)'};
                 border: 1.5px solid #ffd200;
                 animation: signalPulse 2s infinite ease-in-out;
               "></div>
               <!-- Engine Cabin Badge with Directional Compass -->
               <div style="
-                width: 30px;
-                height: 30px;
+                width: 32px;
+                height: 32px;
                 border-radius: 50%;
                 background: #ffd200;
-                color: #050d1c;
+                color: #000000;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 14px;
-                box-shadow: 0 0 18px rgba(255, 210, 0, 0.95), inset 0 0 4px #fff;
-                border: 2.5px solid #050d1c;
+                font-size: 15px;
+                box-shadow: 0 0 16px rgba(255, 210, 0, 0.9), inset 0 0 4px #fff;
+                border: 2.5px solid ${isDark ? '#000000' : '#ffffff'};
                 z-index: 10;
                 transform: rotate(${bearing - 90}deg);
                 transition: transform 0.5s ease;
@@ -207,11 +173,11 @@ export default function TrackMap({ trainData }) {
 
         trainMarkerRef.current = L.marker(trainPos, { icon: locomotiveIcon, zIndexOffset: 1000 }).addTo(map);
         trainMarkerRef.current.bindPopup(`
-          <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 200px;">
-            <div style="font-weight: bold; color: #ffd200; font-size: 13px;">${trainData.trainName}</div>
+          <div style="font-family: system-ui, sans-serif; font-size: 12px; color: ${isDark ? '#f4f4f5' : '#0f172a'}; min-width: 200px;">
+            <div style="font-weight: bold; color: ${isDark ? '#ffd200' : '#854d0e'}; font-size: 13px;">${trainData.trainName}</div>
             <div style="margin-top: 4px; font-weight: 600;">Speed: <span style="color: #10b981;">${trainData.speed || '112 km/h'}</span></div>
-            <div>Bearing: <span style="color: #38bdf8;">${bearing}° heading</span></div>
-            <div style="margin-top: 2px;">Status: <span style="color: #f1f5f9;">${trainData.currentStatus}</span></div>
+            <div>Bearing: <span style="color: #0284c7;">${bearing}° heading</span></div>
+            <div style="margin-top: 2px;">Status: <span>${trainData.currentStatus}</span></div>
           </div>
         `);
       }
@@ -222,27 +188,24 @@ export default function TrackMap({ trainData }) {
     return () => {
       isMounted = false;
       if (mapInstanceRef.current) {
-        try {
-          mapInstanceRef.current.stop();
-          mapInstanceRef.current.remove();
-        } catch (e) {}
+        mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [trainData]);
+  }, [trainData, theme]);
 
   return (
-    <div className="relative w-full h-[400px] lg:h-[540px] rounded overflow-hidden border-2 border-[#1e3a6d]">
+    <div className="relative w-full h-[400px] lg:h-[540px] rounded-lg overflow-hidden border-2 border-slate-200 dark:border-zinc-800 shadow-md transition-colors">
       {/* Map Element */}
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Railway Map HUD Overlay */}
-      <div className="absolute top-3 left-3 z-[400] bg-[#091730]/90 backdrop-blur-sm border border-[#1e3a6d] rounded px-3 py-1.5 text-xs text-white font-mono flex items-center gap-2 shadow-lg">
+      <div className="absolute top-3 left-3 z-[400] bg-white/95 dark:bg-black/90 backdrop-blur-sm border border-slate-200 dark:border-zinc-800 rounded-md px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono flex items-center gap-2 shadow-lg">
         <span className="signal-lamp green signal-pulse"></span>
-        <span>CORRIDOR MAP • GPS TELEMETRY</span>
+        <span className="font-semibold">CORRIDOR MAP • GPS TRACK VIEW</span>
       </div>
 
-      <div className="absolute bottom-3 right-3 z-[400] bg-[#091730]/90 backdrop-blur-sm border border-[#1e3a6d] rounded px-2.5 py-1 text-[11px] text-[#94a3b8] font-mono shadow-lg">
+      <div className="absolute bottom-3 right-3 z-[400] bg-white/95 dark:bg-black/90 backdrop-blur-sm border border-slate-200 dark:border-zinc-800 rounded px-2.5 py-1 text-[11px] text-slate-600 dark:text-zinc-400 font-mono shadow-lg">
         LEAFLET.JS RAIL NETWORK
       </div>
     </div>

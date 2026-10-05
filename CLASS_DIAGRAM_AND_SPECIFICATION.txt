@@ -1,0 +1,941 @@
+====================================================================================================
+RAILSYNC 🚂 — ENTERPRISE JAVA BACKEND ARCHITECTURE & CLASS DIAGRAM SPECIFICATION
+High-Concurrency Java 21 / Spring Boot 3 Engine (30 Enterprise Features)
+====================================================================================================
+
+Generated on: 2026-09-23
+Target Project: RailSync (Migrating Next.js Prototype to Java 21 / Spring Boot 3)
+Architecture: Reactive Microservices / Modular Monolith, Virtual Threads (Project Loom), Kafka, PostGIS, Redis
+
+----------------------------------------------------------------------------------------------------
+TABLE OF CONTENTS
+----------------------------------------------------------------------------------------------------
+1. ARCHITECTURAL OVERVIEW & SPECIFICATION SUMMARY (30 FEATURES)
+2. ASCII / UNICODE UML CLASS DIAGRAMS
+   2.1 Core Domain Aggregate Entity Diagram (High-Level)
+   2.2 Module 1: Real-Time GPS Telemetry & Rolling Stock (F01 - F05)
+   2.3 Module 2: PNR, Passenger Services & Berth Layouts (F06 - F10)
+   2.4 Module 3: Station Operations & Platform Conflict Resolution (F11 - F15)
+   2.5 Module 4: Delay Modeling, Railway Signaling & Graph Routing (F16 - F20)
+   2.6 Module 5: Passenger Notifications & RailMadad Subsystem (F21 - F25)
+   2.7 Module 6: Architecture, Security, Caching & Resilience (F26 - F30)
+3. MERMAID UML CLASS DIAGRAMS (FOR GRAPHICAL PREVIEW & RENDERING)
+4. DESIGN PATTERNS & ARCHITECTURAL MAPPING
+5. COMPLETE CLASS, INTERFACE, ENUM & RECORD DICTIONARY
+
+
+====================================================================================================
+SECTION 1: ARCHITECTURAL OVERVIEW & SPECIFICATION SUMMARY (30 FEATURES)
+====================================================================================================
+
+[ MODULE 1: REAL-TIME GPS TELEMETRY & ROLLING STOCK]
+----------------------------------------------------------------------------------------------------
+F01 | High-Throughput GPS Stream Ingestion Pipeline
+    - Purpose: Ingests high-frequency GPS telemetry packets from locomotive RTIS devices without packet drops.
+    - Stack: Spring Cloud Stream, Apache Kafka, Spring WebFlux, Netty
+    - Component: LiveTracker.js (Telemetry HUD), TrackMap.js (Real-time marker updates)
+    - Implementation: Decodes binary/JSON telemetry payloads, validates hardware signatures, checks timestamp monotonicity, writes to partitioned Kafka topic 'train-telemetry-events'.
+    - Priority: P0 | Complexity: High
+
+F02 | Spatial Corridor Map Matching & Distance-to-Go
+    - Purpose: Snaps raw, jittery GPS coordinates onto official IR track polylines and computes remaining distance to upcoming stations.
+    - Stack: Hibernate Spatial, PostGIS, JTS Topology Suite
+    - Component: RouteRibbon.js (Permanent way sleeper pips), TrackMap.js (Corridor polyline)
+    - Implementation: Projects point onto line segments using ST_ClosestPoint and ST_LineLocatePoint across 68,000+ km of GIS track database, eliminating off-track GPS noise.
+    - Priority: P0 | Complexity: High
+
+F03 | Reactive WebSocket / SSE Telemetry Broadcaster
+    - Purpose: Replaces client-side 30s interval polling with low-latency reactive server-push streams.
+    - Stack: Spring WebSocket, STOMP Protocol, Project Reactor (Flux/SSE)
+    - Component: LiveTracker.js (Auto-refresh loop), Navbar.js (Live clock & sync)
+    - Implementation: Establishes persistent STOMP/WebSocket channels per train (/topic/train/{trainNumber}). Broadcasts telemetry packets on GPS ingestion with sub-second latency.
+    - Priority: P0 | Complexity: Medium
+
+F04 | Locomotive Dynamic Bearing & Smoothing Engine
+    - Purpose: Calculates smooth navigational heading azimuth between sequential GPS pings to orient locomotive marker realistically.
+    - Stack: Apache Commons Math (Kalman Filter), Java Math
+    - Component: TrackMap.js (Directional locomotive rotation), LiveTracker.js (Compass HUD)
+    - Implementation: Executes Haversine forward azimuth calculations combined with 1D Kalman filtering to prevent visual jitter when negotiating curves or stopping at signals.
+    - Priority: P1 | Complexity: Medium
+
+F05 | Train Rake Composition & Rolling Stock Registry
+    - Purpose: Maintains physical locomotive and coach sequences from engine to guard van with class specifications.
+    - Stack: Spring Data JPA, PostgreSQL, Lombok, Jackson GeoJSON
+    - Component: CoachLayout.js (Train rake diagram), PnrSection.js (Coach highlight)
+    - Implementation: Relational model representing rakes, coach sequences (WAP-7, EOG, 3A, 2A, 1A, PC, SL, SLR), tare weights, coach classes, and reverse-rake configurations for terminus stations.
+    - Priority: P1 | Complexity: Medium
+
+
+[MODULE 2: PNR & PASSENGER SERVICES]
+----------------------------------------------------------------------------------------------------
+F06 | 10-Digit PNR Lifecycle & Waitlist Tracker
+    - Purpose: Validates 10-digit PNR checksum, fetches passenger ticket status, and tracks waitlist (WL/RAC) transitions.
+    - Stack: Spring Boot REST, Jakarta Bean Validation, Hibernate Validator
+    - Component: PnrSection.js (10-digit input & dot-matrix slip), HomePage.js (Quick test PNR)
+    - Implementation: Validates Modulus-11 checksums, queries PRS databases, and manages transitions across GNWL, PQWL, RLWL, RAC, and Confirmed states.
+    - Priority: P0 | Complexity: Medium
+
+F07 | Algorithmic 8-Berth Compartment Bay & Cutaway Mapper
+    - Purpose: Computes spatial berth positions and seat layout for any coach type and berth number.
+    - Stack: Core Java 21, Strategy Pattern, JUnit 5
+    - Component: BerthMap.js (8-berth cutaway bay diagram, window/aisle indicators)
+    - Implementation: Encapsulates modulo-8 (Sleeper/3AC), modulo-6 (2AC), and modulo-9 (3AC Economy) formulas, resolving Lower, Middle, Upper, Side Lower, Side Upper, and Window indicators.
+    - Priority: P0 | Complexity: Low
+
+F08 | Automated Chart Preparation Watchdog & Event Publisher
+    - Purpose: Detects chart preparation 4 hours prior to train departure and triggers passenger alerts.
+    - Stack: Quartz Scheduler, Spring Batch, ApplicationEventPublisher
+    - Component: PnrSection.js (CHART PREPARED badge & allocation table)
+    - Implementation: Monitors departure schedules; when chart status flips to 'CHART PREPARED', freezes seat allocations and publishes ChartPreparedEvent to alert dispatchers.
+    - Priority: P1 | Complexity: Medium
+
+F09 | PRS Dot-Matrix PDF & Digital Boarding Pass Generator
+    - Purpose: Generates authentic Indian Railways dot-matrix styled boarding passes and PDF e-tickets with QR codes.
+    - Stack: OpenPDF / iText 7, ZXing (Zebra Crossing Barcode/QR)
+    - Component: PnrSection.js (Print/Download Ticket button)
+    - Implementation: Renders monospace dot-matrix formatted PDF tickets with encrypted HMAC-signed QR codes for TTE validation and offline passenger retention.
+    - Priority: P2 | Complexity: Low
+
+F10 | Waitlist Confirmation Probability Predictor
+    - Purpose: Predicts percentage likelihood of waitlisted tickets getting confirmed before departure.
+    - Stack: ONNX Runtime Java, Tribuo (Java ML), Spring Service
+    - Component: PnrSection.js (Confirmation Probability Gauge)
+    - Implementation: Evaluates historical PRS cancellation rates, seasonal peak quotas (Diwali, Summer), current waitlist position, and days-to-journey using an ONNX regression model.
+    - Priority: P1 | Complexity: High
+
+
+[MODULE 3: STATION OPERATIONS & DISPLAY]
+----------------------------------------------------------------------------------------------------
+F11 | 7,300+ Stations Master In-Memory Search & Spatial Index
+    - Purpose: Sub-millisecond station autocomplete and geographic proximity search across 17 railway zones.
+    - Stack: Redis Search (RediSearch), Spring Data Redis, Jedis/Lettuce
+    - Component: SearchSection.js (Origin/Destination autocomplete), HomePage.js (Station search)
+    - Implementation: Builds an in-memory prefix trie and Levenshtein fuzzy index over 7,300+ stations, indexing station codes, English/Hindi names, zones, and GIS coordinates.
+    - Priority: P0 | Complexity: Medium
+
+F12 | Electronic Split-Flap Station Board Aggregator
+    - Purpose: Generates real-time platform arrival and departure schedules matching station LED matrix boards.
+    - Stack: Spring WebFlux, Caffeine Cache, Java Time API
+    - Component: StationBoard.js (LED matrix table, 2h/4h/8h lookahead filters)
+    - Implementation: Aggregates and caches movements within rolling temporal lookaheads (Next 2, 4, 8 hours). Calculates expected arrival times and live delay discrepancies.
+    - Priority: P0 | Complexity: Medium
+
+F13 | Dynamic Platform Conflict & Berthing Allocation Engine
+    - Purpose: Detects track conflicts and manages platform assignments at busy junction stations.
+    - Stack: Timefold Solver (OptaPlanner), Java Concurrency Locks
+    - Component: StationBoard.js (Platform column), LiveTracker.js (Arrival platform HUD)
+    - Implementation: Models platform track constraints; when delays cause two trains to compete for Platform 1, automatically calculates alternative platform reassignments and logs audits.
+    - Priority: P1 | Complexity: Critical
+
+F14 | 17 Railway Zones & 68 Divisions Organizational Hierarchy
+    - Purpose: Master organizational directory and administrative segmentation for Indian Railways operations.
+    - Stack: Spring Data JPA, PostgreSQL (Closure Table Pattern)
+    - Component: SearchSection.js (Zone filtering), HomePage.js (Network statistics)
+    - Implementation: Maintains hierarchical tree of Zones (NR, WR, CR, etc.) down to 68 Operating Divisions, enabling zone-level traffic filtering and role-based station master permissions.
+    - Priority: P2 | Complexity: Low
+
+F15 | Timetable & Multi-Day Halt Schedule Engine
+    - Purpose: Manages scheduled arrival/departure times, halt durations, distance offsets, and multi-day train runs.
+    - Stack: Spring Data JPA, Flyway Migrations, Java Time API (ZonedDateTime)
+    - Component: RouteRibbon.js (Halt duration & timetable view), SearchSection.js (Results card)
+    - Implementation: Stores timetable waypoints; accurately computes day crossovers (Day 0, Day 1, Day 2) and timezone consistency in IST across cross-country long-haul routes.
+    - Priority: P0 | Complexity: Medium
+
+
+[MODULE 4: PREDICTIVE DELAYS & SCHEDULING]
+----------------------------------------------------------------------------------------------------
+F16 | Three-Aspect Railway Signal Rule Evaluator
+    - Purpose: Classifies train delay into authentic Indian Railways signal aspects: Green, Amber, Red.
+    - Stack: Drools Rule Engine / Spring Strategy Pattern
+    - Component: RouteRibbon.js (Signal pips), LiveTracker.js (Signal indicator badge)
+    - Implementation: Evaluates delay thresholds: Green (Line Clear <= 5m), Amber (Caution 5-25m), Red (Danger > 25m or Cancelled). Outputs signal aspect enum to all clients.
+    - Priority: P0 | Complexity: Low
+
+F17 | Cascading Corridor Delay Propagation Engine
+    - Purpose: Simulates and forecasts downstream delays caused by bottleneck holds at preceding stations.
+    - Stack: JGraphT (Directed Acyclic Graph), Apache Flink / Java Stream
+    - Component: LiveTracker.js (Expected vs Scheduled times), RouteRibbon.js (Future halt forecasts)
+    - Implementation: Traverses rail route graph; calculates cascading delays based on track sectional capacity, single-track crossings, and minimum platform turnaround constraints.
+    - Priority: P1 | Complexity: High
+
+F18 | Multi-Leg Journey Planner & Connecting Route Solver
+    - Purpose: Discovers direct and 1-stop/2-stop transfer itineraries between stations without direct trains.
+    - Stack: Neo4j Graph Database, Spring Data Neo4j, Dijkstra Routing Algorithm
+    - Component: SearchSection.js (Journey planner & alternate route tabs)
+    - Implementation: Executes multi-leg graph traversal across the railway network with minimum transfer time safeguards (>= 45 mins platform change interval).
+    - Priority: P1 | Complexity: High
+
+F19 | Historical Punctuality & Corridor Analytics Engine
+    - Purpose: Computes rolling 30/90-day punctuality ratings and average delay metrics for passenger trains.
+    - Stack: TimescaleDB / ClickHouse, Spring Data JPA, Scheduled Aggregator
+    - Component: HomePage.js (Premier corridors & stats), LiveTracker.js (Reliability rating)
+    - Implementation: Aggregates daily runs into on-time performance (OTP) percentage, punctuality index, and seasonal fog/monsoon delay trends.
+    - Priority: P2 | Complexity: Medium
+
+F20 | Rescheduling, Diversion & Speed Restriction (TSR) Engine
+    - Purpose: Tracks train diversions, cancellations, short-terminations, and temporary speed restrictions.
+    - Stack: Spring Data JPA, Jackson GeoJSON, Event-driven architecture
+    - Component: TrackMap.js (Diverted route line), RouteRibbon.js (Skipped station badges)
+    - Implementation: Dynamically updates active corridor polylines and alerts clients when emergency track work causes diversions via loop lines.
+    - Priority: P1 | Complexity: Medium
+
+
+[MODULE 5: NOTIFICATIONS & AUDIO SUBSYSTEMS]
+----------------------------------------------------------------------------------------------------
+F21 | Multi-Channel Passenger Notification Hub
+    - Purpose: Dispatches proactive notifications via SMS, WhatsApp, and Web Push for major journey events.
+    - Stack: Spring Cloud AWS (SNS), Twilio SDK / Gupshup WhatsApp API, RabbitMQ
+    - Component: PnrSection.js (Notification toggle), LiveTracker.js (Delay alert modal)
+    - Implementation: Asynchronous message consumer that sends platform allocation alerts, 30-min delay warnings, and charting notifications to booked travelers.
+    - Priority: P1 | Complexity: Medium
+
+F22 | Geofenced Destination Wake-Up Alarm Service
+    - Purpose: Triggers wake-up notifications or IVR calls before a passenger reaches their destination.
+    - Stack: Spatial Geofence Checker, RabbitMQ Delayed Exchange, Twilio Voice
+    - Component: LiveTracker.js (Set Destination Alarm button)
+    - Implementation: Monitors GPS proximity; automatically fires automated wake-up phone calls or high-priority mobile push notifications 15 km or 30 minutes prior to arrival.
+    - Priority: P1 | Complexity: Medium
+
+F23 | Server-Side 3-Language Audio Announcement Synthesizer
+    - Purpose: Generates full audio announcements (Hindi, English, regional) prepended by the 4-tone chime.
+    - Stack: Java Sound API, Google Cloud / Azure TTS SDK, FFmpeg Java Wrapper
+    - Component: audio-chime.js (Web Audio synthesizer integration), StationBoard.js (Play announcement)
+    - Implementation: Combines synthesized 4-tone station chime (G4-C5-D5-G5) with dynamic station master voice tracks ('Yatri kripya dhyan dein... Gaadi sankhya...').
+    - Priority: P2 | Complexity: Medium
+
+F24 | Crowdsourced Passenger Sighting & Consensus Engine
+    - Purpose: Ingests telemetry reported by onboard passengers and cross-verifies locations using consensus.
+    - Stack: Redis Geospatial (GEOADD / GEORADIUS), Spring WebFlux
+    - Component: LiveTracker.js (Report Current Station button)
+    - Implementation: Collects cell tower and GPS pings from onboard passengers; applies statistical consensus algorithms to filter out malicious or faulty telemetry.
+    - Priority: P2 | Complexity: High
+
+F25 | RailMadad Grievance & Pantry Cleanliness Subsystem
+    - Purpose: Enables passengers to log coach cleanliness, AC, and pantry food complaints with PNR context.
+    - Stack: Spring Data JPA, MinIO / AWS S3 SDK (Photo attachments), REST APIs
+    - Component: PnrSection.js (Report Coach Issue button)
+    - Implementation: Records complaint tickets with Coach/Berth metadata, auto-routes to on-duty coach attendants, and integrates with Indian Railways RailMadad escalation endpoints.
+    - Priority: P2 | Complexity: Low
+
+
+[MODULE 6: ARCHITECTURE, SECURITY & RESILIENCE]
+----------------------------------------------------------------------------------------------------
+F26 | Hybrid Multi-Tier Caching & Rate Limiting Engine
+    - Purpose: Shields external railway APIs from rate limits while providing sub-10ms response latencies.
+    - Stack: Redis, Caffeine (L1 in-JVM cache), Bucket4j (Token Bucket)
+    - Component: lib/railkit.js (API proxy replacement), app/api/* routes
+    - Implementation: Implements two-tier cache: L1 (local JVM memory, 10s TTL for live telemetry) + L2 (Distributed Redis, 60s TTL for station boards, 24h for static timetables).
+    - Priority: P0 | Complexity: Medium
+
+F27 | API Key Management, Quotas & Developer Tiering
+    - Purpose: Secures endpoints, handles developer registration, and enforces daily rate quotas.
+    - Stack: Spring Security 6, Nimbus JOSE + JWT, Spring Data JPA
+    - Component: ApiKeyModal.js (Link API key dialog), Navbar.js (Key status indicator)
+    - Implementation: Issues cryptographically signed API tokens, validates client keys, and enforces tier limits (Free: 1,000 req/day; Pro: 100,000 req/day) via Redis atomic counters.
+    - Priority: P0 | Complexity: Medium
+
+F28 | High-Concurrency Virtual Thread Engine (Project Loom)
+    - Purpose: Empowers server to handle 50,000+ simultaneous tracking connections with low RAM overhead.
+    - Stack: Java 21 LTS (Project Loom), Spring Boot 3.2+ (spring.threads.virtual.enabled=true)
+    - Component: Entire RailSync Backend (Thread pool architecture)
+    - Implementation: Replaces heavy OS platform threads with lightweight JVM Virtual Threads, preventing thread exhaustion during external railway network calls and blocking I/O.
+    - Priority: P0 | Complexity: Low
+
+F29 | Circuit Breaker & Fallback Simulation Engine
+    - Purpose: Ensures 100% uptime by serving cached or simulated corridors if upstream railway APIs fail.
+    - Stack: Resilience4j (CircuitBreaker, Retry, TimeLimiter, RateLimiter)
+    - Component: lib/railkit.js (Offline mock fallback replacement)
+    - Implementation: Monitors upstream health; opens circuit breaker on error rate > 30% or latency > 2.5s, gracefully falling back to simulated corridor telemetry without crashing.
+    - Priority: P0 | Complexity: Medium
+
+F30 | Distributed Tracing & APM Telemetry Observability
+    - Purpose: Full system visibility into request latencies, active WebSockets, and error spikes.
+    - Stack: Micrometer, OpenTelemetry, Prometheus, Grafana, Micrometer Tracing
+    - Component: Telemetry HUD, API Key manager, Server logs
+    - Implementation: Captures trace IDs across API proxies, records p95/p99 response times, JVM heap/virtual thread metrics, and provides operational Grafana dashboards.
+    - Priority: P1 | Complexity: Medium
+
+
+====================================================================================================
+SECTION 2: ASCII / UNICODE UML CLASS DIAGRAMS
+====================================================================================================
+
+2.1 CORE DOMAIN AGGREGATE ENTITY DIAGRAM
+----------------------------------------------------------------------------------------------------
+
+                  +----------------------------------------------+
+                  |                 RailwayZone                  |
+                  +----------------------------------------------+
+                  | - zoneCode: String                           |
+                  | - zoneName: String                           |
+                  | - headquarters: String                       |
+                  +----------------------------------------------+
+                                         ^ 1
+                                         |
+                                         | administered by
+                                         | *
+                  +----------------------------------------------+
+                  |              OperatingDivision               |
+                  +----------------------------------------------+
+                  | - divisionCode: String                       |
+                  | - divisionName: String                       |
+                  +----------------------------------------------+
+                                         ^ 1
+                                         |
+                                         | belongs to
+                                         | *
++----------------------+ 1 stops at *    +----------------------------------------------+
+|    TimetableHalt     |---------------->|                   Station                    |
++----------------------+                 +----------------------------------------------+
+| - stopSequence: int  |                 | - stationCode: String                        |
+| - scheduledArr: Time |                 | - englishName: String                        |
+| - scheduledDep: Time |                 | - hindiName: String                          |
+| - dayCount: int      |                 | - gisCoordinates: Point                     |
+| - platformNum: int   |                 +----------------------------------------------+
+| - distanceKm: double |                                        | 1
++----------------------+                                        | operates
+           ^ *                                                  | *
+           | follows                                            v
+           | 1                           +----------------------------------------------+
++----------------------+                 |                   Platform                   |
+|        Train         |                 +----------------------------------------------+
++----------------------+                 | - platformNumber: int                        |
+| - trainNumber: String|                 | - lengthMeters: double                       |
+| - trainName: String  |                 | - isElectrified: boolean                     |
+| - trainType: Enum    |                 | - isOccupied: boolean                        |
++----------------------+                 +----------------------------------------------+
+    | 1            | 1                                          ^
+    |              |                                            |
+    | assigned     | booked on                                  | situated in
+    v 1            v *                                          |
++----------------------+                 +----------------------------------------------+
+|         Rake         |                 |               BerthAllocation                |
++----------------------+                 +----------------------------------------------+
+| - rakeId: String     |                 | - coachNumber: String                        |
+| - rakeType: Enum     |                 | - berthNumber: int                           |
+| - isReversed: boolean|                 | - berthType: BerthType (LB,MB,UB,SL,SU,WS)   |
++----------------------+                 | - isWindowSeat: boolean                      |
+    | 1            | 1                   +----------------------------------------------+
+    | powers       | has                                        ^ 0..1
+    v 1            v *                                          | assigned
++----------------------+                 +----------------------------------------------+
+|      Locomotive      |                 |                  Passenger                   |
++----------------------+                 +----------------------------------------------+
+| - locoNumber: String |                 | - passengerId: String                        |
+| - locoType: Enum     |                 | - name: String                               |
+| - rtisDeviceId: Str  |                 | - age: int / gender: Gender                  |
+| - maxSpeed: double   |                 | - bookingStatus: BookingStatus               |
++----------------------+                 +----------------------------------------------+
+                   |                                            ^ *
+                   | emits                                      | contains
+                   v 1                                          | 1
++----------------------+                 +----------------------------------------------+
+|    LiveTelemetry     |                 |                  PnrRecord                   |
++----------------------+                 +----------------------------------------------+
+| - telemetryId: String|                 | - pnrNumber: String (10 Digits)              |
+| - latitude: double   |                 | - journeyDate: LocalDate                     |
+| - longitude: double  |                 | - chartStatus: ChartStatus (PREPARED/EMPTY)  |
+| - speedKmph: double  |                 +----------------------------------------------+
+| - bearing: double    |
+| - distanceToGoKm: dbl|
+| - aspect: SignalAspect
++----------------------+
+
+
+----------------------------------------------------------------------------------------------------
+2.2 MODULE 1: REAL-TIME GPS TELEMETRY & ROLLING STOCK (F01 - F05)
+----------------------------------------------------------------------------------------------------
+
+ +------------------------------------+
+ |         GpsTelemetryPacket         |  <<record>>
+ +------------------------------------+
+ | + rtisDeviceId: String             |
+ | + trainNumber: String              |
+ | + rawLat: double                   |
+ | + rawLng: double                   |
+ | + speedKmph: double                |
+ | + pingTimestamp: Instant           |
+ | + hardwareSignature: String        |
+ +------------------------------------+
+ | + isValidSignature(key): boolean   |
+ +------------------------------------+
+                  ^
+                  | receives & decodes
+                  |
+ +------------------------------------+        uses        +-----------------------------------+
+ |     TelemetryIngestionConsumer     |------------------->|     SpatialMapMatchingService     |
+ +------------------------------------+                    +-----------------------------------+
+ | - mapMatching: MapMatchingService  |                    | - geometryFactory: GeometryFactory|
+ | - smoothingEngine: BearingSmoother |                    | - corridorRepo: TrackRepository   |
+ | - broadcaster: TelemetryBroadcaster|                    +-----------------------------------+
+ | - kafkaTemplate: KafkaTemplate     |                    | + snapToPermanentWay(Point): Snapped
+ +------------------------------------+                    | + computeDistanceToGo(Point): dbl |
+ | + consumeGpsStream(ConsumerRecord) |                    +-----------------------------------+
+ | + validateTimestamp(Packet): bool  |                                      | produces
+ +------------------------------------+                                      v
+           |                     |                         +-----------------------------------+
+           | invokes             | invokes                 |           SnappedResult           |
+           v                     v                         +-----------------------------------+
++-----------------------+ +------------------------------+ | + snappedPoint: Point             |
+| BearingSmoothingEngine| | ReactiveTelemetryBroadcaster | | + projectionOffsetMeters: double  |
++-----------------------+ +------------------------------+ | + trackSegmentId: String          |
+| - kalmanFilter: Kalman| | - stompTemplate: MessagingTpl| +-----------------------------------+
++-----------------------+ +------------------------------+
+| + forwardAzimuth():dbl| | + broadcast(LiveTelemetry)   |
+| + smoothHeading(): dbl| | + streamSse(trainNum): Flux  |
++-----------------------+ +------------------------------+
+
+
+----------------------------------------------------------------------------------------------------
+2.3 MODULE 2: PNR, PASSENGER SERVICES & BERTH LAYOUTS (F06 - F10)
+----------------------------------------------------------------------------------------------------
+
+                          +-----------------------------------+
+                          |            PnrService             |
+                          +-----------------------------------+
+                          | - pnrRepository: PnrRepository    |
+                          | - wlPredictor: WaitlistPredictor  |
+                          | - ticketGen: DotMatrixTicketGen   |
+                          | - berthFactory: BerthMapperFactory|
+                          +-----------------------------------+
+                          | + validateChecksum(pnr): boolean  |  (Modulus-11 Algorithm)
+                          | + getPnrStatus(pnr): PnrRecord    |
+                          | + generateTicketPdf(pnr): byte[]  |
+                          +-----------------------------------+
+                             /              |              \
+           uses             /        uses   |        uses   \
+                           v                v                v
++-----------------------------+ +--------------------+ +-----------------------------+
+|    BerthMapperFactory       | |DotMatrixTicketGen  | |  WaitlistPredictorService   |
++-----------------------------+ +--------------------+ +-----------------------------+
+| + getStrategy(CoachClass):  | | - qrGen: ZXingGen  | | - onnxEnv: OrtEnvironment   |
+|     BerthMapperStrategy     | +--------------------+ | - onnxSession: OrtSession   |
++-----------------------------+ | + renderPdf():byte | +-----------------------------+
+               |                | + makeSignedQr():  | | + predictProbability(): dbl|
+               v instantiates   |     BufferedImage  | +-----------------------------+
++-----------------------------+ +--------------------+
+|   <<interface>>             |
+|    BerthMapperStrategy      |
++-----------------------------+
+| + computeBerth(int): Berth  |
+| + getBayNumber(int): int    |
++-----------------------------+
+     ^           ^          ^
+     |           |          | implements
+     |           |          +--------------------------------------+
+     |           |                                                 |
++--------------------------+ +--------------------+ +-----------------------------+
+|  SleeperAnd3AcStrategy   | |   TwoAcStrategy    | |   ThreeAcEconomyStrategy    |
+|  (Modulo-8 Formula)      | |  (Modulo-6 Formula)| |   (Modulo-9 Formula)        |
++--------------------------+ +--------------------+ +-----------------------------+
+| 1: LB  2: MB  3: UB      | | 1: LB  2: UB       | | 1: LB  2: MB  3: UB         |
+| 4: LB  5: MB  6: UB      | | 3: LB  4: UB       | | 4: LB  5: MB  6: UB         |
+| 7: SL  8: SU             | | 5: SL  6: SU       | | 7: SL  8: SM  9: SU         |
++--------------------------+ +--------------------+ +-----------------------------+
+
+[Event Publisher Watchdog]
++-----------------------------------+        fires        +-----------------------------------+
+|     ChartPreparationWatchdog      |-------------------->|        ChartPreparedEvent         |
++-----------------------------------+                     +-----------------------------------+
+| - eventPublisher: EventPublisher  |                     | + trainNumber: String             |
+| - scheduleRepo: ScheduleRepository|                     | + journeyDate: LocalDate          |
++-----------------------------------+                     | + frozenAt: Instant               |
+| + checkAndFreezeCharts(): void    |                     +-----------------------------------+
+|   (Runs T-4 Hours before journey) |
++-----------------------------------+
+
+
+----------------------------------------------------------------------------------------------------
+2.4 MODULE 3: STATION OPERATIONS & PLATFORM CONFLICT RESOLUTION (F11 - F15)
+----------------------------------------------------------------------------------------------------
+
++-------------------------------------+       +-------------------------------------+
+|        StationSearchService         |       |    StationBoardAggregatorService    |
++-------------------------------------+       +-------------------------------------+
+| - rediSearch: RediSearchCommands    |       | - cache: Cache                      |
+| (Indexes 7,300+ Indian Stations)    |       | - timetableRepo: TimetableRepository|
++-------------------------------------+       +-------------------------------------+
+| + searchByPrefix(prefix): List      |       | + getStationBoard(code, window):    |
+| + searchFuzzy(query): List          |       |       SplitFlapStationBoard         |
+| + searchNearby(lat, lng, r): List   |       | + computeExpectedDelay(): Delay     |
++-------------------------------------+       +-------------------------------------+
+                                                                 | generates
+                                                                 v
+                                              +-------------------------------------+
+                                              |        SplitFlapStationBoard        |
+                                              +-------------------------------------+
+                                              | + stationCode: String               |
+                                              | + movements: List<BoardMovement>    |
+                                              +-------------------------------------+
+
+[Dynamic Platform Conflict Resolution - Timefold / OptaPlanner Solver]
++-------------------------------------+       evaluates       +-------------------------------------+
+|       PlatformConflictSolver        |---------------------->| PlatformAssignmentConstraintProvider|
++-------------------------------------+                       +-------------------------------------+
+| - solverManager: SolverManager      |                       | + noTwoTrainsOnSamePlatform() [HARD]|
++-------------------------------------+                       | + lengthFeasibilityConstraint()[HARD|
+| + resolveConflicts(Station, List):  |                       | + minimizePlatformSwaps()     [SOFT]|
+|       PlatformAllocationPlan        |                       +-------------------------------------+
++-------------------------------------+
+                  | produces
+                  v
++-------------------------------------+
+|       PlatformAllocationPlan        |  <<PlanningSolution>>
++-------------------------------------+
+| - platforms: List<Platform>         |
+| - requests: List<BerthingReq>       |
+| - score: HardSoftScore              |
++-------------------------------------+
+| + getResolvedAssignments(): Map     |
++-------------------------------------+
+
+
+----------------------------------------------------------------------------------------------------
+2.5 MODULE 4: PREDICTIVE DELAYS & RAILWAY SIGNALING (F16 - F20)
+----------------------------------------------------------------------------------------------------
+
++-------------------------------------+       evaluates       +-------------------------------------+
+|       SignalAspectEvaluator         |---------------------->|            SignalAspect             |
++-------------------------------------+                       +-------------------------------------+
+| + evaluateAspect(delay, cancelled): |                       | <<enum>>                            |
+|       SignalAspect                  |                       | GREEN : Delay <= 5 mins (Line Clear)|
++-------------------------------------+                       | AMBER : 5 < Delay <= 25m (Caution)  |
+                                                              | RED   : Delay > 25m (Danger/Halted) |
+                                                              +-------------------------------------+
+
++-------------------------------------+       generates       +-------------------------------------+
+|        CascadingDelayEngine         |---------------------->|       DelayPropagationReport        |
++-------------------------------------+                       +-------------------------------------+
+| - railRouteDag: Graph<Station,Track>|                       | + rootTrainNumber: String           |
+| (JGraphT Directed Acyclic Graph)    |                       | + affectedTrains: Map<Train,Duration
++-------------------------------------+                       | + bottleneckStations: List<Station> |
+| + simulateDelaySpillover(): Report  |                       +-------------------------------------+
+| - calculateSectionSaturation(): dbl |
++-------------------------------------+
+
++-------------------------------------+       +-------------------------------------+
+|       MultiLegJourneyPlanner        |       |     DisruptionManagementEngine      |
++-------------------------------------+       +-------------------------------------+
+| - neo4jDriver: org.neo4j.Driver     |       | - tsrRepo: TsrRepository            |
+| (Dijkstra Traversal with Transfers) |       +-------------------------------------+
++-------------------------------------+       | + recordDiversion(train, polyline)  |
+| + findDirectRoutes(src, dest): List |       | + applySpeedRestriction(segment,spd)|
+| + findConnectingRoutes(): List      |       | + isPointUnderTsr(point): Optional  |
+|   (Safe transfer interval >= 45m)   |       +-------------------------------------+
++-------------------------------------+
+
+
+----------------------------------------------------------------------------------------------------
+2.6 MODULE 5: PASSENGER NOTIFICATIONS & AUDIO SUBSYSTEM (F21 - F25)
+----------------------------------------------------------------------------------------------------
+
++-------------------------------------+       uses        +------------------------------------+
+|      PassengerNotificationHub       |------------------>|   <<interface>>                    |
++-------------------------------------+                   |    NotificationChannelStrategy     |
+| - channels: List<ChannelStrategy>   |                   +------------------------------------+
++-------------------------------------+                   | + supports(ChannelType): boolean   |
+| + dispatchAlert(notification): void |                   | + send(notification): void        |
++-------------------------------------+                   +------------------------------------+
+                                                             ^           ^           ^
+                                                             |           |           |
+                                    +------------------------+           |           +-----------------------+
+                                    |                                    |                                   |
+                     +----------------------------+       +------------------------------+       +----------------------------+
+                     |   SmsNotificationService   |       | WhatsAppNotificationService  |       | WebPushNotificationService |
+                     +----------------------------+       +------------------------------+       +----------------------------+
+                     | - twilioClient: Twilio     |       | - gupshupClient: Gupshup     |       | - webPushClient: PushClient|
+                     +----------------------------+       +------------------------------+       +----------------------------+
+
++-------------------------------------+       +------------------------------------+       +-----------------------------------+
+|        GeofencedAlarmService        |       |    AudioAnnouncementSynthesizer    |       |      RailMadadGrievanceService    |
++-------------------------------------+       +------------------------------------+       +-----------------------------------+
+| - spatialService: SpatialService    |       | - ttsClient: CloudTtsClient        |       | - grievanceRepo: GrievanceRepo    |
+| - rabbitTemplate: RabbitTemplate    |       | - ffmpegWrapper: FfmpegWrapper     |       | - s3Client: MinioClient           |
++-------------------------------------+       +------------------------------------+       +-----------------------------------+
+| + registerAlarm(passenger, station) |       | + synthesizeAnnouncement(): byte[] |       | + fileGrievance(ticket, photo)    |
+| + evaluateProximityAndFire(telemetry|       | - prependFourToneChime(): byte[]   |       | + escalateToCoachAttendant(ticket)|
+|   (Fires 15km / 30m prior to dest)  |       |   (G4-C5-D5-G5 Station Chime)      |       +-----------------------------------+
++-------------------------------------+       +------------------------------------+
+
+
+----------------------------------------------------------------------------------------------------
+2.7 MODULE 6: ARCHITECTURE, RESILIENCE, SECURITY & CACHE (F26 - F30)
+----------------------------------------------------------------------------------------------------
+
+                      +------------------------------------+
+                      |         HybridCacheManager         |
+                      +------------------------------------+
+                      | - caffeineL1: Cache (In-JVM, 10s)  |  (Sub-10ms response for GPS Telemetry)
+                      | - redisL2: RedisTemplate (60s-24h) |  (Distributed station boards & routes)
+                      +------------------------------------+
+                      | + get(key, class): Optional<T>     |
+                      | + put(key, value, ttl): void       |
+                      | + evict(key): void                 |
+                      +------------------------------------+
+                                         ^
+                                         | checks & populates
+                                         |
++------------------------------------+   |    +------------------------------------+
+|         RateLimitingFilter         |---+    |   CircuitBreakerFallbackManager    |
++------------------------------------+        +------------------------------------+
+| - bucket4jProxy: ProxyManager      |        | - registry: CircuitBreakerRegistry |
+| - keyService: ApiKeyService        |        +------------------------------------+
++------------------------------------+        | + executeWithFallback(call, mock): |
+| + doFilter(request, response, chain|        |   (Opens at error > 30% or > 2.5s) |
+|   (Free: 1k/day, Pro: 100k/day)    |        +------------------------------------+
++------------------------------------+
+
++------------------------------------+        +------------------------------------+
+|    VirtualThreadExecutorConfig     |        |    ObservabilityTelemetryTracer    |
++------------------------------------+        +------------------------------------+
+| + virtualThreadTaskExecutor():     |        | - tracer: Tracer (OpenTelemetry)   |
+|       AsyncTaskExecutor            |        | - meterRegistry: MeterRegistry     |
+|   (Handles 50,000+ Sockets / Loom) |        +------------------------------------+
++------------------------------------+        | + recordLatency(name, duration)    |
+                                              | + tagActiveSockets(count)          |
+                                              +------------------------------------+
+
+
+====================================================================================================
+SECTION 3: MERMAID UML CLASS DIAGRAMS (FOR GRAPHICAL PREVIEW & RENDERING)
+====================================================================================================
+Copy and paste the code block below into any Mermaid-compatible markdown previewer or https://mermaid.live
+
+```mermaid
+classDiagram
+    direction TB
+
+    %% MODULE 1: TELEMETRY & ROLLING STOCK
+    class GpsTelemetryPacket {
+        <<record>>
+        +String rtisDeviceId
+        +String trainNumber
+        +double rawLat
+        +double rawLng
+        +double speedKmph
+        +Instant pingTimestamp
+        +String hardwareSignature
+        +boolean isValidSignature(String key)
+    }
+
+    class TelemetryIngestionConsumer {
+        -SpatialMapMatchingService mapMatchingService
+        -BearingSmoothingEngine smoothingEngine
+        -ReactiveTelemetryBroadcaster broadcaster
+        -KafkaTemplate kafkaTemplate
+        +consumeGpsStream(ConsumerRecord record)
+        +validateMonotonicTimestamp(GpsTelemetryPacket packet) boolean
+    }
+
+    class SpatialMapMatchingService {
+        -GeometryFactory geometryFactory
+        -TrackCorridorRepository corridorRepo
+        +snapToPermanentWay(Point rawPoint) SnappedResult
+        +computeDistanceToGoKm(Point currentPos, String trainNumber) double
+    }
+
+    class SnappedResult {
+        <<record>>
+        +Point snappedPoint
+        +double projectionOffsetMeters
+        +double trackLineFraction
+        +String trackSegmentId
+    }
+
+    class BearingSmoothingEngine {
+        -KalmanFilter kalmanFilter
+        +calculateForwardAzimuth(Point p1, Point p2) double
+        +smoothHeading(double currentAzimuth, double prevAzimuth) double
+    }
+
+    class ReactiveTelemetryBroadcaster {
+        -SimpMessagingTemplate stompTemplate
+        +broadcastLiveTelemetry(LiveTelemetry telemetry)
+        +streamServerSentEvents(String trainNumber) Flux~LiveTelemetry~
+    }
+
+    class Train {
+        -String trainNumber
+        -String trainName
+        -TrainType trainType
+        -Station originStation
+        -Station destinationStation
+        -Rake activeRake
+        -List~TimetableHalt~ schedule
+        +getLiveTelemetry() LiveTelemetry
+        +calculateDelay(Station currentStation) Duration
+    }
+
+    class Rake {
+        -String rakeId
+        -RakeType rakeType
+        -boolean isReversed
+        -List~CoachSequence~ coaches
+        -Locomotive locomotive
+        +getTotalCapacity() int
+        +getTareWeight() double
+        +getCoachByPosition(int pos) Coach
+    }
+
+    class Coach {
+        -String coachId
+        -String coachCode
+        -CoachClass coachClass
+        -int totalBerths
+        -double tareWeight
+        +getLayoutStrategy() BerthMapperStrategy
+    }
+
+    class Locomotive {
+        -String locoNumber
+        -LocoType locoType
+        -String rtisDeviceId
+        -double maxPermissibleSpeed
+    }
+
+    %% MODULE 2: PNR & PASSENGER SERVICES
+    class PnrService {
+        -PnrRepository pnrRepository
+        -WaitlistPredictorService wlPredictor
+        -DotMatrixTicketGenerator ticketGenerator
+        +validatePnrChecksum(String pnr) boolean
+        +getPnrStatus(String pnr) PnrRecord
+        +generateTicketPdf(String pnr) byte[]
+    }
+
+    class BerthMapperStrategy {
+        <<interface>>
+        +computeBerth(int berthNumber) BerthAllocation
+        +getBayNumber(int berthNumber) int
+    }
+
+    class SleeperAnd3AcStrategy {
+        +computeBerth(int berthNumber) BerthAllocation
+    }
+
+    class TwoAcStrategy {
+        +computeBerth(int berthNumber) BerthAllocation
+    }
+
+    class ThreeAcEconomyStrategy {
+        +computeBerth(int berthNumber) BerthAllocation
+    }
+
+    class ChartPreparationWatchdog {
+        -ApplicationEventPublisher eventPublisher
+        -TrainScheduleRepository scheduleRepo
+        +checkAndFreezeCharts() void
+        +publishChartPreparedEvent(Train train) void
+    }
+
+    class ChartPreparedEvent {
+        <<event>>
+        +String trainNumber
+        +LocalDate journeyDate
+        +Instant frozenAt
+    }
+
+    class WaitlistPredictorService {
+        -OrtEnvironment onnxEnv
+        -OrtSession onnxSession
+        +predictConfirmationProbability(PnrRecord record) double
+    }
+
+    %% MODULE 3: STATIONS & PLATFORM ALLOCATION
+    class StationSearchService {
+        -RediSearchCommands redisSearch
+        +searchByPrefix(String prefix) List~Station~
+        +searchByFuzzyLevenshtein(String query) List~Station~
+        +searchNearbyStations(double lat, double lng, double radiusKm) List~Station~
+    }
+
+    class StationBoardAggregatorService {
+        -Cache stationBoardCache
+        -TimetableRepository timetableRepo
+        +getArrivalsAndDepartures(String stationCode, Duration lookaheadWindow) SplitFlapStationBoard
+    }
+
+    class PlatformConflictSolver {
+        -SolverManager solverManager
+        +detectAndResolveConflicts(Station station, List~Train~ delayedTrains) PlatformAllocationPlan
+    }
+
+    class Station {
+        -String stationCode
+        -String englishName
+        -String hindiName
+        -Point gisCoordinates
+        -OperatingDivision division
+        -List~Platform~ platforms
+    }
+
+    class Platform {
+        -int platformNumber
+        -double lengthMeters
+        -boolean isElectrified
+        -boolean isOccupied
+    }
+
+    %% MODULE 4: DELAYS & ROUTING
+    class SignalAspectEvaluator {
+        +evaluateAspect(Duration delayDuration, boolean isCancelled) SignalAspect
+    }
+
+    class CascadingDelayEngine {
+        -Graph~Station, CorridorTrackSection~ railRouteDag
+        +simulateDelaySpillover(Train delayedTrain, Duration delayAdded) DelayPropagationReport
+    }
+
+    class MultiLegJourneyPlanner {
+        -Driver neo4jDriver
+        +findDirectRoutes(String src, String dest) List~TrainItinerary~
+        +findConnectingItineraries(String src, String dest, int maxTransfers) List~MultiLegItinerary~
+    }
+
+    %% MODULE 5: NOTIFICATIONS & AUDIO
+    class PassengerNotificationHub {
+        -List~NotificationChannelStrategy~ channels
+        +dispatchAlert(PassengerNotification notification) void
+    }
+
+    class NotificationChannelStrategy {
+        <<interface>>
+        +supports(ChannelType type) boolean
+        +send(PassengerNotification notification) void
+    }
+
+    class AudioAnnouncementSynthesizer {
+        -TtsClient cloudTts
+        -FfmpegWrapper ffmpeg
+        +synthesizeAnnouncement(AnnouncementRequest req) byte[]
+    }
+
+    %% MODULE 6: ARCHITECTURE, SECURITY & CACHE
+    class HybridCacheManager {
+        -Cache caffeineL1Cache
+        -RedisTemplate redisL2Cache
+        +get(String key, Class~T~ clazz) Optional~T~
+        +put(String key, Object value, Duration ttl) void
+        +evict(String key) void
+    }
+
+    class ApiKeyManagementService {
+        -ApiKeyRepository apiKeyRepo
+        -JwtTokenProvider jwtProvider
+        +generateApiKey(String developerId, Tier tier) ApiKey
+        +validateKey(String token) ApiKeyDetails
+    }
+
+    class CircuitBreakerFallbackManager {
+        -CircuitBreakerRegistry registry
+        +executeWithFallback(Supplier~T~ remoteCall, Supplier~T~ fallback) T
+    }
+
+    %% INHERITANCE & IMPLEMENTATION RELATIONSHIPS
+    BerthMapperStrategy <|.. SleeperAnd3AcStrategy : implements
+    BerthMapperStrategy <|.. TwoAcStrategy : implements
+    BerthMapperStrategy <|.. ThreeAcEconomyStrategy : implements
+
+    TelemetryIngestionConsumer --> GpsTelemetryPacket : consumes
+    TelemetryIngestionConsumer --> SpatialMapMatchingService : invokes
+    SpatialMapMatchingService --> SnappedResult : outputs
+    TelemetryIngestionConsumer --> BearingSmoothingEngine : smooths heading
+    TelemetryIngestionConsumer --> ReactiveTelemetryBroadcaster : broadcasts
+
+    PnrService --> BerthMapperStrategy : selects
+    PnrService --> WaitlistPredictorService : predicts
+    ChartPreparationWatchdog ..> ChartPreparedEvent : publishes
+
+    Station "1" *-- "many" Platform : operates
+    Train "1" *-- "1" Rake : assigned
+    Rake "1" *-- "1" Locomotive : powered by
+    StationBoardAggregatorService --> Station : aggregates
+
+    PlatformConflictSolver --> Station : manages platforms
+    PassengerNotificationHub --> NotificationChannelStrategy : delegates
+```
+
+
+====================================================================================================
+SECTION 4: DESIGN PATTERNS & ARCHITECTURAL MAPPING
+====================================================================================================
+
+1. STRATEGY PATTERN:
+   - Interface: BerthMapperStrategy
+   - Implementations: SleeperAnd3AcStrategy (Mod-8), TwoAcStrategy (Mod-6), ThreeAcEconomyStrategy (Mod-9)
+   - Solves: F07 (8-Berth Compartment Bay & Cutaway Layout Mapping)
+   - Dynamic Resolution: Selected at runtime via CoachClass enum.
+
+2. STRATEGY PATTERN (MULTI-CHANNEL DISPATCH):
+   - Interface: NotificationChannelStrategy
+   - Implementations: SmsNotificationService, WhatsAppNotificationService, WebPushNotificationService
+   - Solves: F21 (Multi-Channel Passenger Notification Hub)
+
+3. OBSERVER / EVENT PUBLISHER PATTERN:
+   - Source: ChartPreparationWatchdog (Quartz Job running at T-4 hours)
+   - Event: ChartPreparedEvent
+   - Listeners: PassengerNotificationHub, PlatformConflictSolver, BerthFreezerService
+   - Solves: F08 (Automated Chart Preparation Watchdog)
+
+4. CONSTRAINT SATISFACTION PROBLEM (CSP) / TIMEFOLD OPTAPLANNER:
+   - Planning Entity: TrainBerthingRequirement
+   - Planning Solution: PlatformAllocationPlan
+   - Constraint Provider: PlatformAssignmentConstraintProvider (Hard: Track Length, Platform Collisions; Soft: Platform Swaps)
+   - Solves: F13 (Dynamic Platform Conflict & Berthing Allocation Engine)
+
+5. TWO-TIER CACHE-ASIDE PATTERN:
+   - Layer 1: In-JVM Caffeine Cache (10-second TTL for real-time telemetry, 0ms latency)
+   - Layer 2: Distributed Redis Cluster (60s TTL for station boards, 24h for static timetable schedules)
+   - Solves: F26 (Hybrid Multi-Tier Caching & Rate Limiting Engine)
+
+6. TOKEN BUCKET FILTER PATTERN:
+   - Implementation: Bucket4j backed by Redis atomic tokens
+   - Solves: F27 (API Key Quotas: Free 1,000 req/day, Pro 100,000 req/day)
+
+7. CIRCUIT BREAKER WITH SIMULATION FALLBACK:
+   - Implementation: Resilience4j CircuitBreaker (Threshold: 30% error rate or >2.5s latency)
+   - Fallback: Pre-generated corridor replay simulator ensuring 100% uptime
+   - Solves: F29 (Circuit Breaker & Fallback Simulation Engine)
+
+8. LIGHTWEIGHT CONCURRENCY (PROJECT LOOM):
+   - Implementation: Java 21 Virtual Threads (spring.threads.virtual.enabled=true)
+   - Solves: F28 (50,000+ simultaneous WebSocket and SSE tracking streams without thread starvation)
+
+
+====================================================================================================
+SECTION 5: COMPLETE CLASS, INTERFACE, ENUM & RECORD DICTIONARY
+====================================================================================================
+
+[DOMAIN ENTITIES & MODELS]
+- Train: Core aggregate representing a scheduled train run across the IR network.
+- Rake: Physical rake assembly comprising a locomotive, power cars (EOG), passenger coaches, and pantry car.
+- Coach: Individual rail car with defined coach class, tare weight, and berth layout formula.
+- Locomotive: Traction unit (e.g. WAP-7, WAG-9, WDP-4D) fitted with RTIS GPS hardware.
+- TimetableHalt: Ordered station stop with scheduled arrival/departure, day rollover, and platform.
+- Station: Physical railway station with GIS coordinates, Hindi/English names, and platform tracks.
+- Platform: Station platform track with physical length, electrification status, and occupancy lock.
+- RailwayZone: Top-level administrative zone (e.g. NR, WR, CR, SR, ER).
+- OperatingDivision: Operational division (e.g. Delhi Division, Mumbai Central Division).
+- PnrRecord: 10-digit Modulus-11 validated passenger booking containing travel itinerary and passengers.
+- Passenger: Individual traveler holding waitlist or confirmed berth allocation.
+- BerthAllocation: Physical berth location (Coach Number, Berth Number, Berth Type, Window Indicator).
+- LiveTelemetry: Snapshot of real-time train movement (Lat/Lng, speed, smoothed heading, distance-to-go, signal).
+
+[RECORDS]
+- GpsTelemetryPacket: Immutable telemetry ingestion DTO with cryptographic signature and monotonicity check.
+- SnappedResult: Output of GIS PostGIS map-matching containing projected point and deviation distance.
+- SplitFlapStationBoard: Aggregated snapshot of rolling arrival/departure station board movements.
+- DelayPropagationReport: Downstream bottleneck impact report generated by DAG graph traversal.
+
+[ENUMS]
+- CoachClass: 1A (First AC), 2A (Two Tier AC), 3A (Three Tier AC), 3E (3AC Economy), SL (Sleeper), CC (Chair Car), 2S (Second Sitting).
+- BerthType: LOWER, MIDDLE, UPPER, SIDE_LOWER, SIDE_MIDDLE, SIDE_UPPER, WINDOW_SEAT, AISLE_SEAT.
+- SignalAspect: GREEN (Delay <= 5 mins), AMBER (5 < Delay <= 25 mins), RED (Delay > 25 mins or Cancelled).
+- ChartStatus: NOT_PREPARED, CHART_PREPARED.
+- BookingStatus: CONFIRMED, RAC, GNWL, PQWL, RLWL, CANCELLED.
+- ChannelType: SMS, WHATSAPP, WEB_PUSH, IVR_VOICE.
+- Tier: FREE, PRO, ENTERPRISE.
+
+====================================================================================================
+END OF RAILSYNC CLASS DIAGRAM SPECIFICATION
+====================================================================================================

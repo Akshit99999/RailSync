@@ -66,52 +66,52 @@ export default function ApiKeyModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="station-signboard max-w-lg w-full rounded-lg p-6 relative shadow-2xl border-2 border-[#ffd200]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 dark:bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="station-signboard max-w-lg w-full rounded-xl p-6 relative shadow-2xl border-2 border-yellow-400 dark:border-station-yellow bg-white dark:bg-zinc-950">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#94a3b8] hover:text-white p-1 rounded hover:bg-[#132c60]"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 dark:hover:text-white p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
         >
           <X size={18} />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-4 border-b border-[#1b345f]">
-          <div className="w-10 h-10 rounded bg-[#ffd200] text-[#050d1c] flex items-center justify-center font-bold">
+        <div className="flex items-center gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800">
+          <div className="w-10 h-10 rounded-lg bg-station-yellow text-black flex items-center justify-center font-bold shadow-sm">
             <Key size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white font-mono">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white font-mono">
               RAILKIT API CONFIGURATION
             </h3>
-            <p className="text-xs text-[#94a3b8]">
+            <p className="text-xs text-slate-500 dark:text-zinc-400">
               Link your developer key for real-time live Indian Railways telemetry
             </p>
           </div>
         </div>
 
         {/* Current Active Status Indicator */}
-        <div className="mt-4 p-3.5 bg-[#050e1d] rounded border border-[#1e3a6d] space-y-2">
+        <div className="mt-4 p-3.5 bg-slate-50 dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-800 space-y-2">
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[#94a3b8]">OPERATIONAL STATUS:</span>
+            <span className="text-slate-600 dark:text-zinc-400 font-bold">OPERATIONAL STATUS:</span>
             <div className="flex items-center gap-1.5">
               <span className={`signal-lamp ${status.configured ? 'green' : 'amber'} signal-pulse`}></span>
-              <span className={`font-bold ${status.configured ? 'text-[#10b981]' : 'text-[#ffd200]'}`}>
+              <span className={`font-bold ${status.configured ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-700 dark:text-station-yellow'}`}>
                 {status.configured ? 'RAILKIT LIVE CONNECTED' : 'TELEMETRY SIMULATOR ACTIVE'}
               </span>
             </div>
           </div>
 
           {status.configured && status.maskedKey && (
-            <div className="text-xs font-mono text-[#cbd5e1] pt-1 border-t border-[#142646] flex items-center justify-between">
-              <span className="text-[#64748b]">Active Key:</span>
-              <span className="text-[#ffd200]">{status.maskedKey}</span>
+            <div className="text-xs font-mono text-slate-700 dark:text-zinc-300 pt-1 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+              <span className="text-slate-500 dark:text-zinc-500">Active Key:</span>
+              <span className="text-amber-700 dark:text-station-yellow font-bold">{status.maskedKey}</span>
             </div>
           )}
 
           {!status.configured && (
-            <p className="text-[11px] text-[#94a3b8] pt-1">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400 pt-1">
               Currently running on built-in realistic Indian Railways telemetry data for trains, stations, and PNRs.
             </p>
           )}
@@ -119,10 +119,10 @@ export default function ApiKeyModal({ isOpen, onClose }) {
 
         {/* Feedback message */}
         {feedbackMessage.text && (
-          <div className={`mt-3 p-3 rounded text-xs flex items-center gap-2 ${
+          <div className={`mt-3 p-3 rounded-md text-xs flex items-center gap-2 ${
             feedbackMessage.type === 'success'
-              ? 'bg-[#064e3b] text-[#6ee7b7] border border-[#059669]'
-              : 'bg-[#450a0a] text-[#fca5a5] border border-[#dc2626]'
+              ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+              : 'bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
           }`}>
             {feedbackMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
             <span>{feedbackMessage.text}</span>
@@ -132,7 +132,7 @@ export default function ApiKeyModal({ isOpen, onClose }) {
         {/* Key Form */}
         <form onSubmit={handleSaveKey} className="mt-5 space-y-4">
           <div>
-            <label className="block text-xs font-mono text-[#ffd200] uppercase mb-1">
+            <label className="block text-xs font-mono text-amber-700 dark:text-station-yellow font-bold uppercase mb-1">
               RailKit API Key
             </label>
             <input
@@ -149,7 +149,7 @@ export default function ApiKeyModal({ isOpen, onClose }) {
               href="https://railkit.rajivdubey.dev/"
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-[#38bdf8] hover:underline flex items-center gap-1 font-mono"
+              className="text-xs text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 font-mono font-bold"
             >
               <span>Get Free Key</span>
               <ExternalLink size={12} />

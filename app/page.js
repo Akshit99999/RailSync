@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/Header';
+import Navbar from '@/components/Navbar';
+import HomePage from '@/components/HomePage';
 import SearchSection from '@/components/SearchSection';
 import LiveTracker from '@/components/LiveTracker';
 import StationBoard from '@/components/StationBoard';
 import PnrSection from '@/components/PnrSection';
 import ApiKeyModal from '@/components/ApiKeyModal';
 
-export default function Home() {
-  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'live' | 'station-board' | 'pnr'
+export default function Home({ searchParams }) {
+  const initialTab = searchParams?.tab || 'home';
+  const [activeTab, setActiveTab] = useState(initialTab); // 'home' | 'search' | 'live' | 'station-board' | 'pnr'
   const [activeTrainNumber, setActiveTrainNumber] = useState('12952');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
@@ -20,16 +22,24 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#050d1c] text-[#f1f5f9]">
-      {/* Station Master / Signal Box Header */}
-      <Header
+    <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-black text-slate-900 dark:text-zinc-100 transition-colors duration-200">
+      {/* Navigation Bar */}
+      <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+        onTrackTrain={handleTrackTrain}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
+        {activeTab === 'home' && (
+          <HomePage
+            onNavigate={setActiveTab}
+            onTrackTrain={handleTrackTrain}
+          />
+        )}
+
         {activeTab === 'search' && (
           <SearchSection onTrackTrain={handleTrackTrain} />
         )}
@@ -57,21 +67,21 @@ export default function Home() {
       />
 
       {/* Railway Platform Bottom Status Bar */}
-      <footer className="bg-[#030814] border-t border-[#142646] py-6 text-xs text-[#64748b]">
+      <footer className="bg-white dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800/80 py-6 text-xs text-slate-500 dark:text-zinc-400 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="signal-lamp green"></span>
-            <span className="font-mono text-[#94a3b8]">
-              RAILSYNC TELEMETRY ENGINE • INDIAN RAILWAYS (NON-DB PHASE)
+            <span className="font-mono text-slate-700 dark:text-zinc-300 font-medium">
+              RAILSYNC TELEMETRY ENGINE • INDIAN RAILWAYS
             </span>
           </div>
 
-          <div className="flex items-center gap-4 font-mono text-[11px] text-[#94a3b8]">
+          <div className="flex items-center gap-3 sm:gap-4 font-mono text-[11px] text-slate-600 dark:text-zinc-400">
             <span>17 RAILWAY ZONES</span>
-            <span>•</span>
+            <span className="text-slate-300 dark:text-zinc-700">•</span>
             <span>7,300+ STATIONS</span>
-            <span>•</span>
-            <span className="text-[#ffd200]">LEAFLET.JS GPS MAPPING</span>
+            <span className="text-slate-300 dark:text-zinc-700">•</span>
+            <span className="text-amber-600 dark:text-station-yellow font-bold">GPS TRACK VIEW</span>
           </div>
         </div>
       </footer>

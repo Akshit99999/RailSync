@@ -1,0 +1,412 @@
+================================================================================
+RAILSYNC — CODE EXPLANATION & IMPORTANT FUNCTIONS DOCUMENTATION
+Indian Railways Live Telemetry, GIS Route Tracking & PRS Engine
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. High-Level Architecture & Execution Flow
+2. Theme Engine Functions (components/ThemeProvider.js)
+3. Data Engine & Telemetry Parsing Functions (lib/railkit.js)
+4. Live GPS Tracking & Polling Functions (components/LiveTracker.js)
+5. Leaflet GIS Corridor & Marker Mapping (components/TrackMap.js)
+6. Web Audio Station Announcement Chime (lib/audio-chime.js)
+7. Coach & Berth Compartment Math (components/BerthMap.js & CoachLayout.js)
+8. Global Route Navigation Bridge (app/page.js)
+9. Function Reference Quick Lookup Table
+
+
+================================================================================
+1. HIGH-LEVEL ARCHITECTURE & EXECUTION FLOW
+================================================================================
+
+RailSync is built with Next.js 14 (App Router) and plain JavaScript (ES6+).
+The application operates across three coordinated tiers:
+
+A. Presentation Layer (React Components):
+   - app/page.js manages the active view ('home', 'search', 'live', 'station-board', 'pnr').
+   - components/HomePage.js provides the operational overview, telemetry stats, and interactive capability cards.
+   - components/LiveTracker.js and components/TrackMap.js visualize real-time train movement.
+
+B. Backend Serverless API Routes (app/api/*):
+   - /api/live: Proxies live GPS coordinates, delay minutes, and station stops.
+   - /api/pnr: Queries passenger booking, charting status, and coach/berth allocations.
+   - /api/station-board: Retrieves platform arrivals/departures with 2h, 4h, and 8h lookaheads.
+   - /api/stations: Performs fuzzy autocomplete matching across 7,300+ Indian stations.
+
+C. Core Library Engines (lib/*):
+   - lib/railkit.js: Data adapter connecting to external APIs with built-in realistic fallback simulations.
+   - lib/audio-chime.js: Web Audio API sound generator synthesizing the iconic 4-tone station chime.
+   - lib/stations-data.js: In-memory station database with geographic coordinates.
+
+
+================================================================================
+2. THEME ENGINE FUNCTIONS (components/ThemeProvider.js)
+================================================================================
+
+File: components/ThemeProvider.js
+Purpose: Manages the dual-palette design system:
+         - Dark Mode:  Electric Canary Yellow (#FFD200) on Pitch Black (#000000)
+         - Light Mode: Station Yellow (#FFD200) on Crisp Slate White (#FFFFFF)
+
+--------------------------------------------------------------------------------
+Function: applyTheme(t)
+--------------------------------------------------------------------------------
+Code:
+  const applyTheme = (t) => {
+    const root = document.documentElement;
+    if (t === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+      root.style.colorScheme = 'light';
+    }
+  };
+
+How it works:
+1. Directly targets the document root (document.documentElement).
+2. Toggles the CSS classes 'dark' and 'light'.
+3. Informs the browser's native engine via root.style.colorScheme so native form
+   controls (scrollbars, inputs, buttons) match the active theme.
+4. CSS variables in app/globals.css dynamically switch all colors across the app.
+
+--------------------------------------------------------------------------------
+Function: useEffect() [Theme Initializer]
+--------------------------------------------------------------------------------
+Code:
+  useEffect(() => {
+    const urlTheme = new URLSearchParams(window.location.search).get('theme');
+    const stored = (urlTheme === 'light' || urlTheme === 'dark')
+      ? urlTheme
+      : localStorage.getItem('railsync_theme');
+    if (stored === 'light' || stored === 'dark') {
+      setThemeState(stored);
+      applyTheme(stored);
+    } else {
+      setThemeState('dark');
+      applyTheme('dark');
+    }
+    setMounted(true);
+  }, []);
+
+How it works:
+1. Priority 1 (URL Param): Checks for ?theme=light or ?theme=dark for instant testing.
+2. Priority 2 (Storage): Checks browser localStorage for past user preferences.
+3. Priority 3 (Default): Fallback defaults to high-contrast Indian Railways dark mode.
+
+
+================================================================================
+3. DATA ENGINE & TELEMETRY PARSING FUNCTIONS (lib/railkit.js)
+================================================================================
+
+File: lib/railkit.js
+Purpose: Bridges external APIs with the front-end, normalizes dates to Indian
+         Standard Time (IST), parses delay strings, and provides mock fallbacks.
+
+--------------------------------------------------------------------------------
+Function: formatIndianDate(dateInput)
+--------------------------------------------------------------------------------
+Code:
+  function formatIndianDate(dateInput) {
+    if (!dateInput || dateInput === 'today') {
+      const now = new Date();
+      const istOffset = 5.5 * 60 * 60 * 1000; // UTC + 5:30
+      const istTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + istOffset);
+      const day = String(istTime.getDate()).padStart(2, '0');
+      const month = String(istTime.getMonth() + 1).padStart(2, '0');
+      const year = istTime.getFullYear();
+      return `${day}-${month}-${year}`;
+    }
+    return dateInput;
+  }
+
+How it works:
+1. Calculates Indian Standard Time by applying UTC+5:30 offset.
+2. Formats date into DD-MM-YYYY required by Indian Railways API protocols.
+
+--------------------------------------------------------------------------------
+Function: parseDelayToMinutes(delayStr)
+--------------------------------------------------------------------------------
+Code:
+  function parseDelayToMinutes(delayStr) {
+    if (!delayStr || typeof delayStr !== 'string') return 0;
+    const d = delayStr.toLowerCase().trim();
+    if (d.includes('on time') || d === '' || d === 'rt') return 0;
+    
+    const hourMatch = d.match(/(\d+)\s*hr/i) || d.match(/^(\d+):(\d+)/);
+    if (hourMatch) {
+      if (d.includes(':')) {
+        const parts = d.split(':');
+        return (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+      }
+      return parseInt(hourMatch[1], 10) * 60;
+    }
+    const minMatch = d.match(/(\d+)\s*m/i);
+    if (minMatch) return parseInt(minMatch[1], 10) || 0;
+    const num = parseInt(d.replace(/\D/g, ''), 10);
+    return isNaN(num) ? 0 : num;
+  }
+
+How it works:
+1. Uses regular expressions to parse inconsistent delay text strings
+   (e.g., "01:30 Hr", "25 mins", "RT", "On Time") into a uniform integer in minutes.
+2. This integer drives the signal lamp color indicators and speedometer dials.
+
+
+================================================================================
+4. LIVE GPS TRACKING & POLLING FUNCTIONS (components/LiveTracker.js)
+================================================================================
+
+File: components/LiveTracker.js
+Purpose: Manages live telemetry fetching, 30-second polling loops, and signal lamps.
+
+--------------------------------------------------------------------------------
+Function: fetchLiveTracking(numberToFetch, date)
+--------------------------------------------------------------------------------
+Code:
+  const fetchLiveTracking = async (numberToFetch = trainNumber, date = dateSelection) => {
+    if (!numberToFetch || numberToFetch.length !== 5) {
+      setErrorMessage('Please enter a valid 5-digit train number.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/live?train=${numberToFetch}&date=${date}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setTrainData(data.data);
+        setLastRefreshed(new Date().toLocaleTimeString('en-IN', { hour12: false }));
+        playRailwayChime(); // Sound feedback on data arrival
+      }
+    } catch (err) {
+      setErrorMessage('Communication error with railway tracking server.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+How it works:
+1. Validates 5-digit train numbers (e.g., 12952, 22436).
+2. Performs asynchronous HTTP GET to /api/live.
+3. Updates telemetry state (speed, coordinates, delays, stops).
+4. Plays the Indian Railways 4-tone chime to notify the passenger.
+
+--------------------------------------------------------------------------------
+Function: 30-Second Polling Loop (useEffect)
+--------------------------------------------------------------------------------
+Code:
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => {
+      fetchLiveTracking(trainNumber, dateSelection);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, trainNumber, dateSelection]);
+
+How it works:
+1. Creates a browser timer that triggers fetchLiveTracking every 30,000 milliseconds.
+2. Cleans up with clearInterval when the component unmounts to prevent memory leaks.
+
+--------------------------------------------------------------------------------
+Signal Aspect Classification:
+--------------------------------------------------------------------------------
+  const delay = trainData?.delayMinutes ?? 0;
+  let signalClass = 'green';  // Line Clear: Delay <= 5 mins
+  if (delay > 25) {
+    signalClass = 'red';      // Severe Delay: Delay > 25 mins
+  } else if (delay > 5) {
+    signalClass = 'amber';    // Caution: Delay between 6 and 25 mins
+  }
+
+
+================================================================================
+5. LEAFLET GIS CORRIDOR & MARKER MAPPING (components/TrackMap.js)
+================================================================================
+
+File: components/TrackMap.js
+Purpose: Interactive OpenStreetMap rendering showing train position and route stations.
+
+--------------------------------------------------------------------------------
+Function: initMap()
+--------------------------------------------------------------------------------
+Code:
+  const initMap = async () => {
+    const L = (await import('leaflet')).default;
+    if (!mapContainerRef.current) return;
+
+    const map = L.map(mapContainerRef.current, {
+      center: [trainData.coordinates.lat, trainData.coordinates.lng],
+      zoom: 6,
+    });
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Plot station nodes
+    trainData.route.forEach((stn) => {
+      const isCurrent = trainData.lastReportedStation === stn.code;
+      const isNext = trainData.nextStation === stn.code;
+
+      const stationIcon = L.divIcon({
+        className: 'custom-station-icon',
+        html: `<div style="background: ${isCurrent ? '#ffd200' : isNext ? '#0284c7' : '#10b981'};">
+                 ${stn.code}
+               </div>`,
+      });
+      L.marker([stn.lat, stn.lng], { icon: stationIcon }).addTo(map);
+    });
+
+    // Draw route corridor line
+    L.polyline(latLngs, { color: '#ffd200', weight: 4 }).addTo(map);
+  };
+
+How it works:
+1. Uses dynamic client-side import ('leaflet') with SSR disabled to prevent Node.js crashes.
+2. Plots custom HTML map markers (L.divIcon) with color-coded status:
+   - Green: Departed station
+   - Pulsating Yellow: Current live position
+   - Blue: Next scheduled station
+3. Draws a railway corridor line (L.polyline) connecting all coordinates.
+
+
+================================================================================
+6. WEB AUDIO STATION ANNOUNCEMENT CHIME (lib/audio-chime.js)
+================================================================================
+
+File: lib/audio-chime.js
+Purpose: Synthesizes the authentic 4-tone station announcement chime using
+         browser-native Web Audio API without downloading external audio files.
+
+--------------------------------------------------------------------------------
+Function: playRailwayChime()
+--------------------------------------------------------------------------------
+Code:
+  export function playRailwayChime() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContextClass();
+
+    // 4 frequencies of Indian Railways station chime
+    const notes = [
+      { freq: 392.00, time: 0.00, dur: 0.35 }, // G4
+      { freq: 523.25, time: 0.35, dur: 0.35 }, // C5
+      { freq: 587.33, time: 0.70, dur: 0.35 }, // D5
+      { freq: 783.99, time: 1.05, dur: 0.70 }, // G5 (sustained bell)
+    ];
+
+    notes.forEach((note) => {
+      const startTime = audioCtx.currentTime + note.time;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(note.freq, startTime);
+
+      // Bell envelope: sharp strike, exponential decay
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.8, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + note.dur);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + note.dur);
+    });
+  }
+
+How it works:
+1. Creates four sine wave oscillators matching standard musical frequencies:
+   G4 (392Hz) -> C5 (523.25Hz) -> D5 (587.33Hz) -> G5 (783.99Hz).
+2. Applies a bell envelope using linearRampToValueAtTime for instant strike and
+   exponentialRampToValueAtTime for physical exponential chime resonance decay.
+
+
+================================================================================
+7. COACH & BERTH COMPARTMENT MATH (components/BerthMap.js & CoachLayout.js)
+================================================================================
+
+File: components/BerthMap.js
+Purpose: Converts a passenger's berth number (1 to 72) into an 8-berth compartment bay.
+
+--------------------------------------------------------------------------------
+Berth Bay Math Formula:
+--------------------------------------------------------------------------------
+Code:
+  const base = Math.floor(((bookedBerthNum - 1) / 8)) * 8;
+
+  const bayBerths = [
+    { num: base + 1, code: 'LB', name: 'Lower Berth', side: 'cabin-left',  isWindow: true },
+    { num: base + 2, code: 'MB', name: 'Middle Berth', side: 'cabin-left', isWindow: false },
+    { num: base + 3, code: 'UB', name: 'Upper Berth', side: 'cabin-left',  isWindow: false },
+    { num: base + 4, code: 'LB', name: 'Lower Berth', side: 'cabin-right', isWindow: true },
+    { num: base + 5, code: 'MB', name: 'Middle Berth', side: 'cabin-right', isWindow: false },
+    { num: base + 6, code: 'UB', name: 'Upper Berth', side: 'cabin-right', isWindow: false },
+    { num: base + 7, code: 'SL', name: 'Side Lower',  side: 'side',        isWindow: true },
+    { num: base + 8, code: 'SU', name: 'Side Upper',  side: 'side',        isWindow: true },
+  ];
+
+How it works:
+1. Indian Railways coaches are partitioned into 8-berth compartments (Bay 1: 1-8, Bay 2: 9-16, etc.).
+2. The formula calculates the starting seat number (base).
+3. Constructs the physical cutaway diagram and labels window seats (LB, SL, SU).
+
+File: components/CoachLayout.js
+Function: getCoachColor(code)
+- Assigns authentic Indian Railways livery colors to train rakes:
+  - Maroon (#881337): 1AC First Class (H1)
+  - Blue (#1e40af):   2AC Two-Tier (A1, A2)
+  - Teal (#065f46):   3AC Three-Tier (B1-B6, M1)
+  - Indigo (#3730a3): Sleeper Class (S1-S8)
+  - Amber (#d97706):  Pantry Car (PC)
+  - Red (#e11d48):    Locomotive Engine (WAP-7)
+  - Glowing Yellow:   Passenger's Allocated Coach
+
+
+================================================================================
+8. GLOBAL ROUTE NAVIGATION BRIDGE (app/page.js)
+================================================================================
+
+File: app/page.js
+Purpose: Synchronizes tab navigation across all sections.
+
+--------------------------------------------------------------------------------
+Function: handleTrackTrain(trainNumber)
+--------------------------------------------------------------------------------
+Code:
+  const handleTrackTrain = (trainNumber) => {
+    setActiveTrainNumber(trainNumber);
+    setActiveTab('live');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+How it works:
+1. Invoked whenever a train is selected in the Search, Station Board, or Home pages.
+2. Updates activeTrainNumber state to the chosen train.
+3. Sets activeTab to 'live'.
+4. Scrolls smoothly to the top of the viewport to display the live GPS map and speedometer.
+
+
+================================================================================
+9. FUNCTION REFERENCE QUICK LOOKUP TABLE
+================================================================================
+
+| Function Name       | File Location                | Primary Responsibility                         |
+| :------------------ | :--------------------------- | :--------------------------------------------- |
+| applyTheme          | components/ThemeProvider.js  | Toggles .dark/.light classes on HTML root      |
+| setTheme            | components/ThemeProvider.js  | Saves theme choice to localStorage             |
+| toggleTheme         | components/ThemeProvider.js  | Flips between dark and light modes             |
+| formatIndianDate    | lib/railkit.js               | Converts dates to IST DD-MM-YYYY format        |
+| parseDelayToMinutes | lib/railkit.js               | Parses delay strings into numeric minutes      |
+| getLiveTrainTracking| lib/railkit.js               | Retrieves GPS coordinates and stops (API/Mock) |
+| getPNRStatus        | lib/railkit.js               | Retrieves 10-digit PNR reservation details     |
+| fetchLiveTracking   | components/LiveTracker.js    | Asynchronously queries /api/live endpoint      |
+| playRailwayChime    | lib/audio-chime.js           | Generates 4-tone chime via Web Audio API       |
+| initMap             | components/TrackMap.js       | Initializes Leaflet GIS map & markers          |
+| handleTrackTrain    | app/page.js                  | Navigates directly to Live Tracking view       |
+| getCoachColor       | components/CoachLayout.js    | Returns livery styling for train coaches       |
+
+================================================================================
+END OF CODE EXPLANATION DOCUMENT
+================================================================================

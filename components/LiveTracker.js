@@ -11,9 +11,9 @@ import { playRailwayChime } from '@/lib/audio-chime';
 const TrackMap = dynamic(() => import('./TrackMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[400px] lg:h-[540px] rounded bg-[#091730] border-2 border-[#1e3a6d] flex flex-col items-center justify-center text-[#ffd200] font-mono gap-3">
-      <div className="w-8 h-8 border-4 border-[#ffd200] border-t-transparent rounded-full animate-spin"></div>
-      <span>INITIALIZING CORRIDOR GPS MAP...</span>
+    <div className="w-full h-[400px] lg:h-[540px] rounded-lg bg-slate-100 dark:bg-zinc-950 border-2 border-slate-200 dark:border-zinc-800 flex flex-col items-center justify-center text-amber-600 dark:text-station-yellow font-mono gap-3 shadow-inner">
+      <div className="w-8 h-8 border-4 border-station-yellow border-t-transparent rounded-full animate-spin"></div>
+      <span className="font-bold tracking-wider">INITIALIZING GPS TRACK VIEW...</span>
     </div>
   ),
 });
@@ -79,24 +79,24 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
   // Determine signal aspect based on delay
   const delay = trainData?.delayMinutes ?? 0;
   let signalClass = 'green';
-  let delayBadgeClass = 'bg-[#064e3b] text-[#6ee7b7] border-[#059669]';
+  let delayBadgeClass = 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700';
   if (delay > 25) {
     signalClass = 'red';
-    delayBadgeClass = 'bg-[#450a0a] text-[#fca5a5] border-[#dc2626]';
+    delayBadgeClass = 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700';
   } else if (delay > 5) {
     signalClass = 'amber';
-    delayBadgeClass = 'bg-[#451a03] text-[#fde68a] border-[#d97706]';
+    delayBadgeClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700';
   }
 
   return (
     <div className="space-y-6">
       {/* Top Controller Bar */}
-      <div className="station-signboard p-4 rounded-md">
+      <div className="station-signboard p-4 rounded-lg">
         <form onSubmit={handleManualSearch} className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="flex items-center gap-2">
               <span className="station-code-pill text-xs">CONTROL</span>
-              <span className="text-white font-mono font-bold text-sm">TRAIN NO:</span>
+              <span className="text-slate-900 dark:text-white font-mono font-bold text-sm">TRAIN NO:</span>
             </div>
 
             <input
@@ -117,7 +117,7 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
               className="rail-input w-auto text-xs py-1.5 font-medium cursor-pointer"
             >
               <option value="today">Today (Live)</option>
-              <option value="yesterday">Yesterday (Journey Continues)</option>
+              <option value="yesterday">Yesterday (Active Run)</option>
             </select>
 
             <button type="submit" disabled={isLoading} className="rail-btn-primary py-1.5 px-3 text-xs">
@@ -128,12 +128,12 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
 
           <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end text-xs font-mono">
             {/* Auto refresh toggle */}
-            <label className="flex items-center gap-2 cursor-pointer text-[#94a3b8] hover:text-white">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">
               <input
                 type="checkbox"
                 checked={autoRefresh}
                 onChange={(e) => setAutoRefresh(e.target.checked)}
-                className="accent-[#ffd200]"
+                className="accent-station-yellow"
               />
               <span>Auto-refresh (30s)</span>
             </label>
@@ -144,13 +144,13 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
               onClick={() => fetchLiveTracking(trainNumber, dateSelection)}
               disabled={isLoading}
               title="Refresh Telemetry"
-              className="p-1.5 rounded bg-[#0b1d3a] hover:bg-[#132c60] border border-[#1e3a6d] text-[#ffd200]"
+              className="p-1.5 rounded-md bg-slate-100 dark:bg-zinc-900 hover:bg-amber-100 dark:hover:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-amber-700 dark:text-station-yellow transition-colors"
             >
               <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
             </button>
 
             {lastRefreshed && (
-              <span className="text-[#64748b] hidden md:inline">
+              <span className="text-slate-500 dark:text-zinc-500 hidden md:inline">
                 Synced at {lastRefreshed}
               </span>
             )}
@@ -160,15 +160,15 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="p-4 bg-[#3f0f15] border border-[#ef4444] rounded text-[#fca5a5] text-sm flex items-start gap-3">
-          <AlertCircle size={20} className="text-[#ef4444] shrink-0 mt-0.5" />
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-md text-rose-800 dark:text-rose-200 text-sm flex items-start gap-3">
+          <AlertCircle size={20} className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           <div className="flex-1">
             <span className="font-bold">TELEMETRY NOTICE: </span>
             {errorMessage}
           </div>
           <button
             onClick={() => fetchLiveTracking(trainNumber, dateSelection)}
-            className="text-xs bg-[#ef4444] text-white px-2.5 py-1 rounded font-bold hover:bg-[#dc2626]"
+            className="text-xs bg-rose-600 text-white px-2.5 py-1 rounded font-bold hover:bg-rose-700 transition-colors"
           >
             Retry
           </button>
@@ -177,30 +177,30 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
 
       {/* Live Train Operations HUD Card */}
       {trainData && (
-        <div className="station-signboard p-4 sm:p-5 rounded-md space-y-4">
+        <div className="station-signboard p-4 sm:p-5 rounded-lg space-y-4">
           {/* Masthead Banner: Train Name & Status */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-4 border-b border-[#1b345f]">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800">
             <div className="space-y-1">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="train-number-badge text-sm sm:text-base">
                   {trainData.trainNumber}
                 </span>
-                <h1 className="text-lg sm:text-xl font-black text-white tracking-wider">
+                <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-wider">
                   {trainData.trainName}
                 </h1>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-[#94a3b8]">
+              <div className="flex items-center gap-2 text-xs font-mono text-slate-600 dark:text-zinc-400">
                 <span>CORRIDOR:</span>
-                <span className="text-[#ffd200] font-bold">{trainData.origin}</span>
+                <span className="text-amber-700 dark:text-station-yellow font-bold">{trainData.origin}</span>
                 <span>➔</span>
-                <span className="text-[#ffd200] font-bold">{trainData.destination}</span>
+                <span className="text-amber-700 dark:text-station-yellow font-bold">{trainData.destination}</span>
               </div>
             </div>
 
             {/* Live Operational Status Badge */}
             <div className="flex items-center gap-3">
               <span className={`signal-lamp ${signalClass} signal-pulse`}></span>
-              <div className={`px-3 py-1.5 rounded border text-xs font-mono font-bold tracking-wide ${delayBadgeClass}`}>
+              <div className={`px-3 py-1.5 rounded-md border text-xs font-mono font-bold tracking-wide ${delayBadgeClass}`}>
                 {delay === 0 ? 'ON TIME (RIGHT TIME)' : `DELAYED BY ${delay} MINS`}
               </div>
             </div>
@@ -208,54 +208,54 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
 
           {/* Real-time Telemetry Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <Gauge size={14} className="text-[#ffd200]" />
+            <div className="bg-slate-50 dark:bg-zinc-900/90 p-3 rounded-md border border-slate-200 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-400 font-mono mb-1">
+                <Gauge size={14} className="text-amber-600 dark:text-station-yellow" />
                 <span>CURRENT SPEED</span>
               </div>
-              <div className="text-base sm:text-lg font-bold text-white font-mono">
+              <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-mono">
                 {trainData.speed || '112 km/h'}
               </div>
             </div>
 
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <MapPin size={14} className="text-[#10b981]" />
+            <div className="bg-slate-50 dark:bg-zinc-900/90 p-3 rounded-md border border-slate-200 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-400 font-mono mb-1">
+                <MapPin size={14} className="text-emerald-600 dark:text-emerald-400" />
                 <span>LAST REPORTED</span>
               </div>
-              <div className="text-base sm:text-lg font-bold text-[#ffd200] font-mono">
+              <div className="text-base sm:text-lg font-bold text-amber-700 dark:text-station-yellow font-mono">
                 {trainData.lastReportedStation || '--'}
               </div>
             </div>
 
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <Navigation size={14} className="text-[#38bdf8]" />
+            <div className="bg-slate-50 dark:bg-zinc-900/90 p-3 rounded-md border border-slate-200 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-400 font-mono mb-1">
+                <Navigation size={14} className="text-sky-600 dark:text-sky-400" />
                 <span>NEXT STOP</span>
               </div>
-              <div className="text-base sm:text-lg font-bold text-white font-mono">
+              <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-mono">
                 {trainData.nextStation || '--'}
               </div>
             </div>
 
-            <div className="bg-[#050e1d] p-3 rounded border border-[#142646]">
-              <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-mono mb-1">
-                <Clock size={14} className="text-[#f59e0b]" />
+            <div className="bg-slate-50 dark:bg-zinc-900/90 p-3 rounded-md border border-slate-200 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-400 font-mono mb-1">
+                <Clock size={14} className="text-amber-600 dark:text-amber-400" />
                 <span>PROGRESS</span>
               </div>
-              <div className="text-base sm:text-lg font-bold text-white font-mono">
+              <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-mono">
                 {trainData.distanceCovered || '380 km'} / {trainData.totalDistance || '1386 km'}
               </div>
             </div>
           </div>
 
           {/* Current Running Commentary */}
-          <div className="p-3 bg-[#071326] border-l-4 border-[#ffd200] rounded-r text-xs sm:text-sm font-mono text-[#cbd5e1] flex items-center justify-between">
+          <div className="p-3 bg-amber-50/80 dark:bg-zinc-900 border-l-4 border-yellow-400 dark:border-station-yellow rounded-r text-xs sm:text-sm font-mono text-slate-800 dark:text-zinc-200 flex items-center justify-between shadow-sm">
             <div>
-              <span className="text-[#ffd200] font-bold">STATUS BROADCAST: </span>
+              <span className="text-amber-800 dark:text-station-yellow font-bold">STATUS BROADCAST: </span>
               {trainData.currentStatus}
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#10b981]">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
               <Radio size={14} className="animate-pulse" />
               <span>LIVE GPS FEED</span>
             </div>

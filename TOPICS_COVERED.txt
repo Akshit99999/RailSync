@@ -1,0 +1,320 @@
+================================================================================
+RAILSYNC — PROJECT TOPICS & CURRICULUM MAPPING
+================================================================================
+Project: RailSync (Indian Railways Live Telemetry & PRS Engine)
+Tech Stack: Next.js 14 (App Router), React 18, JavaScript (ES6+), Tailwind CSS,
+            Leaflet GIS, Web Audio API, Serverless Route Handlers
+================================================================================
+
+This document maps all computer science, web development, and software 
+engineering topics covered in the RailSync project, structured directly against
+the standard frontend/full-stack curriculum module format.
+
+--------------------------------------------------------------------------------
+MODULE BREAKDOWN & TOPIC MAPPING
+--------------------------------------------------------------------------------
+
+[MODULE 1-6] HTML5, SEMANTIC WEB, CSS3, & RESPONSIVE DESIGN
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - HTML5 structure, semantic tags, accessibility basics
+  - CSS3 fundamentals, Box Model, Flexbox, Grid
+  - Responsive design, media queries, mobile-first layouts
+
+• How RailSync Covers Them:
+  1. Semantic HTML Structure:
+     - Uses semantic tags across all views: <header>, <nav>, <main>, <section>,
+       <article>, <footer>, <aside>, <time>, <figure>.
+     - Files: app/layout.js, app/page.js, components/Navbar.js, components/HomePage.js
+
+  2. Accessibility (a11y) & Standards:
+     - Form inputs paired with descriptive placeholders, labels, and aria attributes.
+     - Accessible icon buttons with aria-labels (theme toggle, sound toggle, menu).
+     - Strict color-contrast ratios adhering to railway high-contrast standards.
+     - Files: components/Navbar.js, components/ApiKeyModal.js
+
+  3. CSS3 Fundamentals & Box Model:
+     - Custom CSS variables defined in app/globals.css for dynamic dual-theme tokens
+       (--station-yellow, --bg-canvas, --surface-card, --border-rail).
+     - Custom borders, padding/margin spacing scales, and railway-style shadows.
+     - Files: app/globals.css, tailwind.config.js
+
+  4. Flexbox & CSS Grid Systems:
+     - Flexbox: Navigation bars, telemetry HUDs, status badges, and button rows
+       (e.g., flex items-center justify-between gap-4).
+     - CSS Grid: Multi-column station boards, 8-berth compartment bay layout,
+       train rake coach layout, and metric stat cards.
+     - Files: components/BerthMap.js, components/CoachLayout.js, components/HomePage.js
+
+  5. Responsive & Mobile-First Design:
+     - Fully responsive across mobile, tablet, and widescreen viewports using
+       Tailwind utility breakpoints (sm:, md:, lg:, xl:).
+     - Collapsible mobile navigation drawer with backdrop blur.
+     - Multi-tier stacking: 1-column on mobile -> 2/3 columns on desktop.
+     - Files: components/Navbar.js, components/LiveTracker.js, components/SearchSection.js
+
+
+[MODULE 7-12] JAVASCRIPT BASICS, GIT, TOOLS, & DEV WORKFLOW
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - JavaScript basics: variables, functions, arrays, objects, loops
+  - Dev tools, VS Code setup, Git/GitHub basics
+  - Mini project: static responsive landing page
+
+• How RailSync Covers Them:
+  1. JavaScript Fundamentals:
+     - Variable declarations (const, let) with block scoping.
+     - Higher-order array operations (.map(), .filter(), .find(), .some(), .slice()).
+     - Complex nested object modeling (stations, schedules, passenger records).
+     - Conditional logic, switch statements, and loop iterations.
+     - Files: lib/railkit.js, lib/stations-data.js, components/StationBoard.js
+
+  2. Modern Development Environment:
+     - Next.js development server configuration (next dev, next build, next start).
+     - jsconfig.json with absolute path aliases (@/components/*, @/lib/*).
+     - PostCSS and Tailwind CSS processing pipelines.
+     - Files: package.json, jsconfig.json, tailwind.config.js, postcss.config.js
+
+  3. Version Control & Repository Architecture:
+     - Clean Git repository setup with structured .gitignore excluding node_modules,
+       .next build artifacts, and local environment files (.env.local).
+     - Structured documentation (README.md, PROJECT_NOTES.md, CODE_EXPLANATION.txt).
+
+
+[MODULE 13-18] ES6+ MODERN JAVASCRIPT, ASYNC PROGRAMMING & WEB APIS
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - ES6+ features: let/const, arrow functions, destructuring, spread/rest
+  - Modules, imports/exports
+  - Promises, async/await, fetch API
+  - DOM manipulation and event handling
+  - Browser storage, JSON, and forms
+  - Mini project: interactive to-do app
+
+• How RailSync Covers Them:
+  1. ES6+ Language Features:
+     - Arrow functions for component methods and event handlers.
+     - Object and array destructuring (const { code, name, lat, lng } = station).
+     - Spread and rest operators (...prev, ...stationData, { ...query, page: 1 }).
+     - Template literals for dynamic URL construction (`/api/live?train=${num}`).
+     - Files: components/LiveTracker.js, components/SearchSection.js
+
+  2. ES Modules (ESM):
+     - Named exports and default exports cleanly organizing code into modular layers.
+     - Files: lib/audio-chime.js, lib/railkit.js, components/Navbar.js
+
+  3. Asynchronous JavaScript & REST Fetching:
+     - Promises and async/await syntax handling all backend API communications.
+     - Error handling with try/catch/finally blocks and graceful fallback states.
+     - Network response deserialization via res.json().
+     - Files: components/LiveTracker.js, components/SearchSection.js, components/StationBoard.js
+
+  4. DOM Manipulation & Event Handling:
+     - Synthetic event handling (onClick, onChange, onSubmit, onKeyDown).
+     - Global window event listeners with proper cleanup (mousedown click-outside).
+     - Smooth scrolling programmatic navigation (window.scrollTo({ behavior: 'smooth' })).
+     - Files: components/SearchSection.js, components/StationBoard.js, app/page.js
+
+  5. Browser Web APIs & Client Storage:
+     - LocalStorage API: Persistent storage for theme preferences (railsync_theme)
+       and audio toggle status (railsync_audio_enabled).
+     - URLSearchParams API: Reading URL query parameters (?theme=light).
+     - Web Audio API: Generating station announcement chimes using pure browser oscillators.
+     - Files: components/ThemeProvider.js, lib/audio-chime.js
+
+
+[MODULE 19-24] REACT INTRODUCTION, EVENT HANDLING & CONTROLLED FORMS
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - Handling events, forms, and controlled components
+  - React project setup with Vite/CRA (Next.js in this project)
+  - Mini project: counter app or product card UI
+
+• How RailSync Covers Them:
+  1. Controlled Components & Form Architecture:
+     - Controlled inputs where React state is the single source of truth.
+     - 5-digit train number input with instant validation and sanitization.
+     - 10-digit PNR input field with regex character limits and live formatting.
+     - Station autocomplete search bars with real-time dropdown filtering.
+     - Files: components/SearchSection.js, components/PnrSection.js
+
+  2. Interactive User Controls:
+     - Quick "Hot Route" preset chips (e.g., NDLS → MMCT, MAS → SBC).
+     - Station swap button (reversing Origin and Destination with animation).
+     - Tab button bars (All, Departures, Arrivals) and time window selectors (2h, 4h, 8h).
+     - Files: components/SearchSection.js, components/StationBoard.js
+
+  3. Feedback & Micro-Interactions:
+     - Loading spinners, disabled button states during network requests,
+       and visual error alert banners on invalid queries.
+     - Files: components/LiveTracker.js, components/ApiKeyModal.js
+
+
+[MODULE 25-30] REACT CORE: JSX, PROPS, STATE & CONDITIONAL RENDERING
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - React introduction, component-based architecture
+  - JSX, components, props, state
+  - Rendering lists, conditional rendering
+
+• How RailSync Covers Them:
+  1. Component-Based Architecture:
+     - Modular separation of concerns into independent, reusable React components:
+       Navbar, HomePage, SearchSection, LiveTracker, StationBoard, PnrSection,
+       TrackMap, RouteRibbon, CoachLayout, BerthMap, ApiKeyModal, ThemeProvider.
+     - Files: components/*.js
+
+  2. Declarative JSX & Props Data Flow:
+     - Passing props down component trees (e.g., initialTrainNumber, passengers, coach,
+       onTrackTrain, onNavigate).
+     - Passing callback functions as props for upward child-to-parent communication.
+     - Files: app/page.js, components/LiveTracker.js, components/BerthMap.js
+
+  3. Conditional Rendering Techniques:
+     - Short-circuit evaluation (isLoading && <LoadingSpinner />).
+     - Ternary operators for dual theme and active state styling (active ? 'bg-yellow' : 'bg-transparent').
+     - Multi-view tab rendering in orchestrator (activeTab === 'live' && <LiveTracker />).
+     - Guard clauses returning null when data is missing.
+     - Files: app/page.js, components/BerthMap.js, components/StationBoard.js
+
+  4. Dynamic List Rendering:
+     - Iterating over collections with .map() and providing stable, unique keys.
+     - Rendering route station ribbons, coach rake diagrams, passenger tables,
+       and platform arrival/departure split-flap rows.
+     - Files: components/RouteRibbon.js, components/CoachLayout.js, components/PnrSection.js
+
+
+[MODULE 31-36] ADVANCED REACT HOOKS, STATE MANAGEMENT & REUSABLE UI
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - useState, useEffect, useRef
+  - useMemo, useCallback
+  - Component composition and reusable UI
+  - Custom hooks
+  - Lifting state up and prop drilling basics
+  - Mini project: weather app or notes app
+
+• How RailSync Covers Them:
+  1. useState:
+     - Managing complex UI states across all components (active tabs, search queries,
+       live telemetry data, modal visibilities, filter selections, sound toggles).
+
+  2. useEffect & Lifecycle Orchestration:
+     - Data fetching on component mount and on parameter updates.
+     - Real-Time Polling Engine: Automated 30-second setInterval in LiveTracker
+       with necessary clearInterval cleanup on component unmount to prevent leaks.
+     - Global event listener registration and removal for outside click detection.
+     - Files: components/LiveTracker.js, components/SearchSection.js
+
+  3. useRef:
+     - Persistent DOM element references (fromRef, toRef, dropdownRef) for click-outside detection.
+     - Map instance and Leaflet layer caching across re-renders (mapContainerRef,
+       mapInstanceRef, markersRef, polylineRef) to prevent multiple map re-initializations.
+     - Files: components/TrackMap.js, components/SearchSection.js
+
+  4. Lifting State Up & Prop Drilling Management:
+     - The top-level orchestrator (app/page.js) holds activeTab and activeTrainNumber.
+     - State-setter callbacks are lifted up and passed down to child components so
+       clicking "Track" on Station Board or Search seamlessly transitions to Live Tracker.
+     - Files: app/page.js
+
+  5. Custom Context & Custom Hooks:
+     - Custom ThemeContext built with createContext() and useContext().
+     - Exposes a reusable custom hook: useTheme() for accessing active theme and toggles.
+     - Files: components/ThemeProvider.js
+
+
+[MODULE 37-42] ROUTING, NAVIGATION & APPLICATION ARCHITECTURE
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - React Router basics
+  - Nested routes, dynamic routes, route params
+  - Protected routes and 404 pages
+
+• How RailSync Covers Them:
+  1. Next.js 14 App Router Framework:
+     - Server-side root layout (app/layout.js) wrapping font configurations and context providers.
+     - Client boundary orchestration ('use client') in app/page.js.
+     - Files: app/layout.js, app/page.js
+
+  2. Single Page Application (SPA) Tabbed Routing:
+     - High-performance tab navigation switching between views ('home', 'search',
+       'live', 'station-board', 'pnr') without full page reloads.
+     - Programmatic view transitions with smooth viewport scrolling.
+     - Files: app/page.js, components/Navbar.js
+
+  3. Query Parameter Handling:
+     - Reading URL search parameters (e.g. ?theme=dark or ?theme=light) to allow
+       instant deep-linked theme inspection and testing.
+     - Files: components/ThemeProvider.js
+
+
+================================================================================
+ADVANCED TOPICS COVERED BEYOND STANDARD SYLLABUS
+================================================================================
+
+[MODULE 43-48] FULL-STACK SERVERLESS API ROUTES & BACKEND ARCHITECTURE
+--------------------------------------------------------------------------------
+• Serverless Route Handlers:
+  - Six RESTful Next.js backend API endpoints built inside app/api/*:
+    1. /api/live — Live GPS coordinates, speed, delay, and station telemetry.
+    2. /api/pnr — 10-digit PNR reservation status, chart preparation, passenger berths.
+    3. /api/station-board — Real-time platform arrivals and departures (2h, 4h, 8h).
+    4. /api/search — Train search between stations or direct by train number.
+    5. /api/stations — Fuzzy autocomplete search across 7,300+ Indian stations.
+    6. /api/config — Runtime RailKit API key status, validation, and session linking.
+  - HTTP request handling via Next.js NextResponse.json() with appropriate HTTP
+    status codes (200 OK, 400 Bad Request, 500 Internal Server Error).
+  - Query parameter extraction using new URL(request.url).searchParams.
+  - Server-side API key protection and proxying to external railway endpoints.
+  - Files: app/api/**/route.js
+
+
+[MODULE 49-54] GIS MAPPING, WEB AUDIO SYNTHESIS & DOMAIN ENGINEERING
+--------------------------------------------------------------------------------
+• Interactive GIS Mapping (Leaflet.js):
+  - Dynamic client-side dynamic() import with SSR disabled ({ ssr: false }).
+  - OpenStreetMap & CartoDB tile layers rendered over custom canvas.
+  - Custom HTML/SVG map markers and coordinate polyline track corridors.
+  - Mathematical bearing and rotation calculations for directional locomotive markers.
+  - Files: components/TrackMap.js, components/LiveTracker.js
+
+• Web Audio API Synthesis:
+  - Zero external MP3/audio files needed.
+  - Synthesizes the authentic 4-tone Indian Railways platform announcement chime:
+    G4 (392.00 Hz) ➔ C5 (523.25 Hz) ➔ D5 (587.33 Hz) ➔ G5 (783.99 Hz).
+  - Uses AudioContext, OscillatorNode (sine waves), and GainNode (attack/exponential decay bell envelopes).
+  - Files: lib/audio-chime.js
+
+• Indian Railways Domain & Algorithmic Logic:
+  - 8-Berth Compartment Bay Math: Modular arithmetic calculating bay index
+    and berth positions (Lower Berth, Middle, Upper, Side Lower, Side Upper).
+  - Train Rake Composition Engine: Complete locomotive-to-guard sequence
+    (WAP-7, EOG, Pantry, AC 1st, 2nd, 3rd Tier, Sleeper) with dynamic passenger coach glow.
+  - 3-Aspect Railway Signaling State Machine:
+    🟢 Green (Line Clear, delay < 5 mins)
+    🟡 Amber (Caution, delay 5–25 mins)
+    🔴 Red (Danger/Severe Delay, delay > 25 mins)
+  - Resilient Hybrid Fallback Engine: RapidAPI RailKit proxy with built-in realistic
+    fallback simulations for all major Indian train corridors.
+  - Files: components/BerthMap.js, components/CoachLayout.js, components/RouteRibbon.js, lib/railkit.js
+
+================================================================================
+SUMMARY CHECKLIST FOR VIVAS / INTERVIEWS / ASSIGNMENTS
+================================================================================
+[x] Semantic HTML5 & Accessible UI
+[x] Advanced CSS3, Tailwind CSS, Flexbox & CSS Grid
+[x] Dual Dark/Light Design System & Custom CSS Variables
+[x] ES6+ Modern JavaScript (Destructuring, Spread, Arrow Functions)
+[x] Asynchronous JS (Promises, Async/Await, Fetch API)
+[x] React Component Architecture & Declarative JSX
+[x] Controlled Form Inputs & Validation
+[x] React Hooks: useState, useEffect (with cleanup), useRef
+[x] State Lifting & Inter-Component Communication
+[x] Custom Context & Custom Hook (useTheme)
+[x] Next.js 14 App Router & Single Page Application (SPA) Tab Routing
+[x] Full-Stack Serverless Backend API Route Handlers
+[x] GIS Route Mapping with Leaflet.js & Dynamic Imports
+[x] Native Browser Web Audio API Acoustic Sound Synthesis
+[x] Offline Resilience & Dynamic Mock Fallback Data Architecture
+================================================================================
