@@ -9,7 +9,7 @@ Designed specifically around the authentic visual and physical world of Indian R
 ## 📸 Core Features
 
 1. **Station & Train Search Terminal**
-   - Instant station lookup across major junctions in all 17 Indian Railway zones.
+   - Instant station lookup across major junctions in all 17 Indian Railway zones
    - Origin / Destination station swap control.
    - Quick Hot Route presets (`NDLS → MMCT`, `NDLS → BSB`, `NDLS → HWH`, `MAS → SBC`).
    - 5-digit direct train number lookup with audio chime feedback.
