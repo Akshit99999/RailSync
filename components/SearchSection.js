@@ -1,25 +1,34 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Search, ArrowRightLeft, Train, Calendar, AlertCircle, ArrowRight, MapPin, Loader2, Sparkles, X } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  Search, 
+  ArrowRightLeft, 
+  Train, 
+  Calendar, 
+  AlertCircle, 
+  ArrowRight, 
+  MapPin, 
+  Loader2, 
+  Sparkles,
+  ShoppingBag,
+  Star,
+  Volume2
+} from 'lucide-react';
 import { playRailwayChime } from '@/lib/audio-chime';
-import { findStation, getStationByCode } from '@/lib/stations-data';
+import StationSelect from './forms/StationSelect';
+import FormInput from './forms/FormInput';
+import { useCartStore } from '@/store/useCartStore';
+import { useApp } from '@/context/AppContext';
 
 export default function SearchSection({ onTrackTrain }) {
   const [searchMode, setSearchMode] = useState('stations'); // 'stations' | 'number'
   
-  // Station search state - starts empty as requested by user
-  const [fromInput, setFromInput] = useState('');
-  const [toInput, setToInput] = useState('');
-  const [selectedFrom, setSelectedFrom] = useState(null);
-  const [selectedTo, setSelectedTo] = useState(null);
+  // Station search state
+  const [selectedFrom, setSelectedFrom] = useState({ code: 'NDLS', name: 'New Delhi', state: 'Delhi' });
+  const [selectedTo, setSelectedTo] = useState({ code: 'MMCT', name: 'Mumbai Central', state: 'Maharashtra' });
   
-  const [fromSuggestions, setFromSuggestions] = useState([]);
-  const [toSuggestions, setToSuggestions] = useState([]);
-  const [showFromDropdown, setShowFromDropdown] = useState(false);
-  const [showToDropdown, setShowToDropdown] = useState(false);
-
-  // Train number direct search state
+  // Direct Train number search state
   const [trainNumberInput, setTrainNumberInput] = useState('');
   
   // Results & Loading state
@@ -27,143 +36,29 @@ export default function SearchSection({ onTrackTrain }) {
   const [searchResults, setSearchResults] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const fromRef = useRef(null);
-  const toRef = useRef(null);
+  // Booking Modal State for Selected Train
+  const [bookingTrain, setBookingTrain] = useState(null);
+  const [selectedClass, setSelectedClass] = useState('3A');
+  const [selectedQuota, setSelectedQuota] = useState('GN');
+  const [passengerCount, setPassengerCount] = useState(1);
 
-  // Click outside listener to close autocomplete dropdowns
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (fromRef.current && !fromRef.current.contains(e.target)) {
-        setShowFromDropdown(false);
-      }
-      if (toRef.current && !toRef.current.contains(e.target)) {
-        setShowToDropdown(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Fetch station suggestions on input
-  const fetchStationSuggestions = async (query, setSuggestions) => {
-    if (!query || query.trim().length === 0) {
-      setSuggestions([]);
-      return;
-    }
-    try {
-      const res = await fetch(`/api/stations?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      if (data.success && data.stations) {
-        setSuggestions(data.stations);
-      }
-    } catch (err) {
-      console.warn('Station lookup failed:', err);
-    }
-  };
-
-  const handleFromChange = (e) => {
-    const val = e.target.value;
-    setFromInput(val);
-    setSelectedFrom(null);
-    setErrorMessage('');
-    if (!val || val.trim().length === 0) {
-      setFromSuggestions([]);
-      setShowFromDropdown(false);
-      return;
-    }
-    setShowFromDropdown(true);
-    fetchStationSuggestions(val, setFromSuggestions);
-  };
-
-  const handleToChange = (e) => {
-    const val = e.target.value;
-    setToInput(val);
-    setSelectedTo(null);
-    setErrorMessage('');
-    if (!val || val.trim().length === 0) {
-      setToSuggestions([]);
-      setShowToDropdown(false);
-      return;
-    }
-    setShowToDropdown(true);
-    fetchStationSuggestions(val, setToSuggestions);
-  };
-
-  const handleClearFrom = () => {
-    setFromInput('');
-    setSelectedFrom(null);
-    setFromSuggestions([]);
-    setShowFromDropdown(false);
-    setErrorMessage('');
-  };
-
-  const handleClearTo = () => {
-    setToInput('');
-    setSelectedTo(null);
-    setToSuggestions([]);
-    setShowToDropdown(false);
-    setErrorMessage('');
-  };
-
-  const handleSelectFrom = (stn) => {
-    setSelectedFrom(stn);
-    setFromInput(`${stn.name} (${stn.code})`);
-    setShowFromDropdown(false);
-    setFromSuggestions([]);
-    setErrorMessage('');
-  };
-
-  const handleSelectTo = (stn) => {
-    setSelectedTo(stn);
-    setToInput(`${stn.name} (${stn.code})`);
-    setShowToDropdown(false);
-    setToSuggestions([]);
-    setErrorMessage('');
-  };
+  const { addItem, setCartOpen } = useCartStore();
+  const { watchlist, addToWatchlist, removeFromWatchlist, isWatchlisted, triggerTrainAnnouncement, addToast } = useApp();
 
   const handleSwapStations = () => {
-    const tempStation = selectedFrom;
-    const tempInput = fromInput;
+    const temp = selectedFrom;
     setSelectedFrom(selectedTo);
-    setFromInput(toInput);
-    setSelectedTo(tempStation);
-    setToInput(tempInput);
-    setErrorMessage('');
+    setSelectedTo(temp);
   };
 
   // Perform train search between stations
   const handleStationSearch = async (e) => {
     if (e) e.preventDefault();
-
-    let departureStation = selectedFrom;
-    if (!departureStation && fromInput.trim()) {
-      const q = fromInput.trim();
-      const matchCode = q.match(/\(([A-Za-z0-9]+)\)/);
-      const codeOrText = matchCode ? matchCode[1] : q;
-      departureStation = getStationByCode(codeOrText) || findStation(codeOrText)[0] || null;
-      if (departureStation) {
-        setSelectedFrom(departureStation);
-        setFromInput(`${departureStation.name} (${departureStation.code})`);
-      }
-    }
-
-    let arrivalStation = selectedTo;
-    if (!arrivalStation && toInput.trim()) {
-      const q = toInput.trim();
-      const matchCode = q.match(/\(([A-Za-z0-9]+)\)/);
-      const codeOrText = matchCode ? matchCode[1] : q;
-      arrivalStation = getStationByCode(codeOrText) || findStation(codeOrText)[0] || null;
-      if (arrivalStation) {
-        setSelectedTo(arrivalStation);
-        setToInput(`${arrivalStation.name} (${arrivalStation.code})`);
-      }
-    }
-
-    if (!departureStation?.code || !arrivalStation?.code) {
-      setErrorMessage('Please enter and select valid departure and arrival stations.');
+    if (!selectedFrom?.code || !selectedTo?.code) {
+      setErrorMessage('Please choose valid departure and arrival stations.');
       return;
     }
-    if (departureStation.code === arrivalStation.code) {
+    if (selectedFrom.code === selectedTo.code) {
       setErrorMessage('Source and Destination stations cannot be identical.');
       return;
     }
@@ -173,7 +68,7 @@ export default function SearchSection({ onTrackTrain }) {
     setSearchResults(null);
 
     try {
-      const res = await fetch(`/api/search?from=${departureStation.code}&to=${arrivalStation.code}`);
+      const res = await fetch(`/api/search?from=${selectedFrom.code}&to=${selectedTo.code}`);
       const data = await res.json();
       if (data.success) {
         setSearchResults(data.data || []);
@@ -203,35 +98,62 @@ export default function SearchSection({ onTrackTrain }) {
 
   // Quick preset shortcuts
   const selectQuickRoute = (fromCode, fromName, toCode, toName) => {
-    const fromObj = getStationByCode(fromCode) || { code: fromCode, name: fromName, state: '' };
-    const toObj = getStationByCode(toCode) || { code: toCode, name: toName, state: '' };
-    setSelectedFrom(fromObj);
-    setFromInput(`${fromObj.name} (${fromObj.code})`);
-    setSelectedTo(toObj);
-    setToInput(`${toObj.name} (${toObj.code})`);
-    setErrorMessage('');
+    setSelectedFrom({ code: fromCode, name: fromName });
+    setSelectedTo({ code: toCode, name: toName });
     setSearchMode('stations');
   };
 
+  // Confirm booking into cart
+  const handleConfirmBooking = () => {
+    if (!bookingTrain) return;
+
+    let baseFare = 1450;
+    if (selectedClass === '1A') baseFare = 3850;
+    else if (selectedClass === '2A') baseFare = 2450;
+    else if (selectedClass === '3A') baseFare = 1680;
+    else if (selectedClass === 'SL') baseFare = 640;
+
+    addItem({
+      trainNumber: bookingTrain.trainNumber,
+      trainName: bookingTrain.trainName,
+      fromStation: bookingTrain.fromStation || selectedFrom.code,
+      toStation: bookingTrain.toStation || selectedTo.code,
+      travelDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+      travelClass: selectedClass,
+      quota: selectedQuota,
+      baseFare,
+      passengers: Array.from({ length: passengerCount }).map((_, i) => ({
+        name: `Passenger ${i + 1}`,
+        age: 25 + i * 2,
+        gender: i % 2 === 0 ? 'Male' : 'Female',
+        berthPref: 'Lower Berth',
+      })),
+    });
+
+    setBookingTrain(null);
+    setCartOpen(true);
+    addToast(`${bookingTrain.trainNumber} added to Journey Cart!`, 'success');
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono">
       {/* Search Type Mode Switcher */}
-      <div className="station-signboard p-4 sm:p-6 rounded-lg transition-colors">
+      <div className="station-signboard p-4 sm:p-6 rounded-2xl transition-colors shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <span className="station-code-pill text-xs">ENQUIRY</span>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-wide">
-              TRAIN SEARCH & ROUTE LOOKUP
+              TRAIN SEARCH & CORRIDOR ROUTE ENGINE
             </h2>
           </div>
 
-          <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-md border border-slate-300 dark:border-zinc-800">
+          <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300 dark:border-zinc-800 text-xs">
             <button
               type="button"
               onClick={() => { setSearchMode('stations'); setErrorMessage(''); }}
-              className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
+              className={`px-3.5 py-1.5 font-bold rounded-lg transition-all ${
                 searchMode === 'stations'
-                  ? 'bg-station-yellow text-black font-extrabold shadow-sm'
+                  ? 'bg-amber-500 dark:bg-station-yellow text-black shadow-sm'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -240,9 +162,9 @@ export default function SearchSection({ onTrackTrain }) {
             <button
               type="button"
               onClick={() => { setSearchMode('number'); setErrorMessage(''); }}
-              className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
+              className={`px-3.5 py-1.5 font-bold rounded-lg transition-all ${
                 searchMode === 'number'
-                  ? 'bg-station-yellow text-black font-extrabold shadow-sm'
+                  ? 'bg-amber-500 dark:bg-station-yellow text-black shadow-sm'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -253,7 +175,7 @@ export default function SearchSection({ onTrackTrain }) {
 
         {/* Error Alert Box */}
         {errorMessage && (
-          <div className="mt-4 p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-md text-rose-800 dark:text-rose-200 text-xs sm:text-sm flex items-start gap-2.5">
+          <div className="mt-4 p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-200 text-xs sm:text-sm flex items-start gap-2.5">
             <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <span className="font-bold">INQUIRY NOTICE: </span>
@@ -267,126 +189,43 @@ export default function SearchSection({ onTrackTrain }) {
           <form onSubmit={handleStationSearch} className="mt-5 space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-11 gap-3 items-center">
               {/* FROM STATION */}
-              <div className="lg:col-span-5 relative" ref={fromRef}>
-                <label className="block text-xs font-mono text-amber-700 dark:text-station-yellow font-bold uppercase mb-1">
-                  Origin Station (From)
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    value={fromInput}
-                    onChange={handleFromChange}
-                    onFocus={() => {
-                      if (fromSuggestions.length > 0) setShowFromDropdown(true);
-                    }}
-                    placeholder="Enter station name or code (e.g. NDLS, DLI)..."
-                    className="rail-input font-medium pr-16"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-slate-400 dark:text-zinc-500">
-                    {fromInput && (
-                      <button
-                        type="button"
-                        onClick={handleClearFrom}
-                        className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors"
-                        title="Clear origin station"
-                        aria-label="Clear origin station"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                    <MapPin size={16} className="pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Autocomplete Dropdown */}
-                {showFromDropdown && fromSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border-2 border-yellow-400 dark:border-station-yellow rounded-md z-30 max-h-56 overflow-y-auto shadow-2xl">
-                    {fromSuggestions.map((stn) => (
-                      <div
-                        key={stn.code}
-                        onClick={() => handleSelectFrom(stn)}
-                        className="px-3.5 py-2.5 hover:bg-amber-50 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 last:border-b-0 transition-colors"
-                      >
-                        <div>
-                          <span className="font-semibold text-slate-900 dark:text-white text-sm">{stn.name}</span>
-                          <span className="text-xs text-slate-500 dark:text-zinc-400 ml-2">({stn.state})</span>
-                        </div>
-                        <span className="station-code-pill text-xs">{stn.code}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="lg:col-span-5">
+                <StationSelect
+                  label="ORIGIN STATION (FROM)"
+                  value={selectedFrom}
+                  onChange={setSelectedFrom}
+                  required
+                />
               </div>
 
               {/* SWAP BUTTON */}
-              <div className="lg:col-span-1 flex justify-center pt-2 sm:pt-4">
+              <div className="lg:col-span-1 flex justify-center pt-5">
                 <button
                   type="button"
                   onClick={handleSwapStations}
-                  title="Swap Origin & Destination"
-                  className="p-2.5 rounded-full bg-slate-100 dark:bg-zinc-900 hover:bg-amber-100 dark:hover:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-amber-700 dark:text-station-yellow transition-transform active:rotate-180 shadow-sm"
+                  className="p-2.5 rounded-full border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-station-yellow hover:rotate-180 transition-all duration-300 text-slate-600 dark:text-zinc-300 shadow-sm"
+                  title="Swap Origin and Destination"
                 >
                   <ArrowRightLeft size={16} />
                 </button>
               </div>
 
               {/* TO STATION */}
-              <div className="lg:col-span-5 relative" ref={toRef}>
-                <label className="block text-xs font-mono text-amber-700 dark:text-station-yellow font-bold uppercase mb-1">
-                  Destination Station (To)
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    value={toInput}
-                    onChange={handleToChange}
-                    onFocus={() => {
-                      if (toSuggestions.length > 0) setShowToDropdown(true);
-                    }}
-                    placeholder="Enter station name or code (e.g. MMCT, CSMT)..."
-                    className="rail-input font-medium pr-16"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-slate-400 dark:text-zinc-500">
-                    {toInput && (
-                      <button
-                        type="button"
-                        onClick={handleClearTo}
-                        className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors"
-                        title="Clear destination station"
-                        aria-label="Clear destination station"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                    <MapPin size={16} className="pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Autocomplete Dropdown */}
-                {showToDropdown && toSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border-2 border-yellow-400 dark:border-station-yellow rounded-md z-30 max-h-56 overflow-y-auto shadow-2xl">
-                    {toSuggestions.map((stn) => (
-                      <div
-                        key={stn.code}
-                        onClick={() => handleSelectTo(stn)}
-                        className="px-3.5 py-2.5 hover:bg-amber-50 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 last:border-b-0 transition-colors"
-                      >
-                        <div>
-                          <span className="font-semibold text-slate-900 dark:text-white text-sm">{stn.name}</span>
-                          <span className="text-xs text-slate-500 dark:text-zinc-400 ml-2">({stn.state})</span>
-                        </div>
-                        <span className="station-code-pill text-xs">{stn.code}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="lg:col-span-5">
+                <StationSelect
+                  label="DESTINATION STATION (TO)"
+                  value={selectedTo}
+                  excludeCode={selectedFrom?.code}
+                  onChange={setSelectedTo}
+                  required
+                />
               </div>
             </div>
 
-            {/* Action Buttons & Quick Presets */}
-            <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-400 flex-wrap">
-                <span className="font-mono text-amber-700 dark:text-station-yellow font-bold">HOT ROUTES:</span>
+            {/* Quick Route Shortcuts & Search Button */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400">
+                <span className="font-bold text-slate-700 dark:text-zinc-300">Popular Corridors:</span>
                 <button
                   type="button"
                   onClick={() => selectQuickRoute('NDLS', 'New Delhi', 'MMCT', 'Mumbai Central')}
@@ -454,24 +293,11 @@ export default function SearchSection({ onTrackTrain }) {
                     type="text"
                     maxLength={5}
                     value={trainNumberInput}
-                    onChange={(e) => {
-                      setTrainNumberInput(e.target.value);
-                      setErrorMessage('');
-                    }}
-                    placeholder="e.g. 12952 (Tejas Rajdhani), 22436 (Vande Bharat)..."
-                    className="rail-input font-mono text-base font-bold tracking-widest !pl-12 !pr-10 !py-3 uppercase"
+                    onChange={(e) => setTrainNumberInput(e.target.value)}
+                    placeholder="e.g. 12952 (Rajdhani), 22436 (Vande Bharat)..."
+                    className="rail-input font-mono text-base font-bold tracking-widest !pl-12 !pr-4 !py-3 uppercase"
                   />
                   <Train size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-600 dark:text-station-yellow pointer-events-none z-10" />
-                  {trainNumberInput && (
-                    <button
-                      type="button"
-                      onClick={() => setTrainNumberInput('')}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors"
-                      title="Clear train number"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
                 </div>
                 <button type="submit" className="rail-btn-primary">
                   <Train size={16} />
@@ -515,67 +341,188 @@ export default function SearchSection({ onTrackTrain }) {
           <div className="flex items-center justify-between text-xs text-slate-600 dark:text-zinc-400 px-1 font-mono">
             <span>
               FOUND {searchResults.length} TRAIN(S) BETWEEN{' '}
-              <strong className="text-amber-700 dark:text-station-yellow">{selectedFrom?.code || 'ORIGIN'}</strong> AND{' '}
-              <strong className="text-amber-700 dark:text-station-yellow">{selectedTo?.code || 'DESTINATION'}</strong>
+              <strong className="text-amber-700 dark:text-station-yellow">{selectedFrom.code}</strong> AND{' '}
+              <strong className="text-amber-700 dark:text-station-yellow">{selectedTo.code}</strong>
             </span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">● LIVE TELEMETRY</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">● LIVE CORRIDOR SCHEDULES</span>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {searchResults.map((train) => (
-              <div
-                key={train.trainNumber}
-                className="station-signboard p-4 rounded-lg hover:border-station-yellow transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm"
-              >
-                {/* Train Info */}
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="train-number-badge">{train.trainNumber}</span>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base tracking-wide">
-                      {train.trainName}
-                    </h3>
+            {searchResults.map((train) => {
+              const inWatchlist = isWatchlisted(train.trainNumber);
+              return (
+                <div
+                  key={train.trainNumber}
+                  className="station-signboard p-4 rounded-xl hover:border-station-yellow transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm"
+                >
+                  {/* Train Info */}
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="train-number-badge">{train.trainNumber}</span>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-base tracking-wide">
+                        {train.trainName}
+                      </h3>
+                      {/* Watchlist Star Toggle */}
+                      <button
+                        onClick={() => inWatchlist ? removeFromWatchlist(train.trainNumber) : addToWatchlist(train)}
+                        className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors ${
+                          inWatchlist ? 'text-amber-500' : 'text-slate-400'
+                        }`}
+                        title={inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                      >
+                        <Star size={15} fill={inWatchlist ? 'currentColor' : 'none'} />
+                      </button>
+
+                      {/* Station Audio Announcement */}
+                      <button
+                        onClick={() => triggerTrainAnnouncement({
+                          trainNumber: train.trainNumber,
+                          trainName: train.trainName,
+                          origin: selectedFrom.name,
+                          destination: selectedTo.name,
+                          platform: '1'
+                        })}
+                        className="p-1 rounded text-slate-400 hover:text-station-yellow hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                        title="Broadcast Voice Announcement"
+                      >
+                        <Volume2 size={15} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono text-slate-600 dark:text-zinc-400 pt-1 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-900 dark:text-white font-bold">{train.departureTime}</span>
+                        <span className="text-amber-700 dark:text-station-yellow font-bold">({train.fromStation || selectedFrom.code})</span>
+                      </div>
+                      <ArrowRight size={14} className="text-slate-400 dark:text-zinc-600" />
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-900 dark:text-white font-bold">{train.arrivalTime}</span>
+                        <span className="text-amber-700 dark:text-station-yellow font-bold">({train.toStation || selectedTo.code})</span>
+                      </div>
+                      <span className="hidden sm:inline text-slate-300 dark:text-zinc-700">|</span>
+                      <span className="hidden sm:inline text-slate-700 dark:text-zinc-300 font-medium">{train.duration}</span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono text-slate-600 dark:text-zinc-400 pt-1 flex-wrap">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-slate-900 dark:text-white font-bold">{train.departureTime}</span>
-                      <span className="text-amber-700 dark:text-station-yellow font-bold">({train.fromStation || selectedFrom?.code})</span>
-                    </div>
-                    <ArrowRight size={14} className="text-slate-400 dark:text-zinc-600" />
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-slate-900 dark:text-white font-bold">{train.arrivalTime}</span>
-                      <span className="text-amber-700 dark:text-station-yellow font-bold">({train.toStation || selectedTo?.code})</span>
-                    </div>
-                    <span className="hidden sm:inline text-slate-300 dark:text-zinc-700">|</span>
-                    <span className="hidden sm:inline text-slate-700 dark:text-zinc-300 font-medium">{train.duration}</span>
+                  {/* Available Classes & Actions */}
+                  <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-200 dark:border-zinc-800">
+                    {/* Book Ticket Button */}
+                    <button
+                      onClick={() => setBookingTrain(train)}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                    >
+                      <ShoppingBag size={13} />
+                      <span>Book / Cart</span>
+                    </button>
+
+                    {/* Track Train Live */}
+                    <button
+                      onClick={() => onTrackTrain(train.trainNumber)}
+                      className="px-3 py-1.5 rounded-lg bg-amber-500 dark:bg-station-yellow hover:opacity-90 text-black font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                    >
+                      <Train size={13} />
+                      <span>Track Live</span>
+                    </button>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-                {/* Available Classes & Track Action */}
-                <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-200 dark:border-zinc-800">
-                  {train.classes && (
-                    <div className="flex gap-1">
-                      {train.classes.map((cls) => (
-                        <span
-                          key={cls}
-                          className="px-2 py-0.5 bg-slate-100 dark:bg-zinc-900 text-slate-800 dark:text-amber-300 font-mono text-[11px] rounded border border-slate-200 dark:border-zinc-800 font-semibold"
-                        >
-                          {cls}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+      {/* Quick Booking Modal */}
+      {bookingTrain && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-2xl shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+              <div>
+                <span className="text-[10px] text-amber-600 dark:text-station-yellow font-bold uppercase">RESERVATION BOOKING</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
+                  {bookingTrain.trainNumber} - {bookingTrain.trainName}
+                </h3>
+              </div>
+              <button onClick={() => setBookingTrain(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 text-sm">
+                ✕
+              </button>
+            </div>
 
+            <div className="space-y-4 text-xs">
+              {/* Class Selection */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-zinc-300">SELECT TRAVEL CLASS</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['1A', '2A', '3A', 'SL'].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSelectedClass(c)}
+                      className={`py-2 rounded-lg font-bold border transition-colors ${
+                        selectedClass === c
+                          ? 'border-station-yellow bg-amber-500/10 text-station-yellow ring-1 ring-station-yellow'
+                          : 'border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quota Selection */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-zinc-300">QUOTA</label>
+                <select
+                  value={selectedQuota}
+                  onChange={(e) => setSelectedQuota(e.target.value)}
+                  className="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 outline-none text-slate-900 dark:text-zinc-100"
+                >
+                  <option value="GN">General Quota (GN)</option>
+                  <option value="TQ">Tatkal Emergency Quota (TQ)</option>
+                  <option value="LD">Ladies Quota (LD)</option>
+                  <option value="SS">Senior Citizen Concession (SS)</option>
+                </select>
+              </div>
+
+              {/* Passenger Count */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-zinc-300">NUMBER OF PASSENGERS</label>
+                <div className="flex items-center gap-3">
                   <button
-                    onClick={() => onTrackTrain(train.trainNumber)}
-                    className="rail-btn-primary py-2 px-4 text-xs"
+                    type="button"
+                    onClick={() => setPassengerCount(Math.max(1, passengerCount - 1))}
+                    className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-zinc-800 font-bold"
                   >
-                    <Train size={14} />
-                    <span>Track Live</span>
+                    -
+                  </button>
+                  <span className="text-sm font-bold w-4 text-center">{passengerCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPassengerCount(Math.min(6, passengerCount + 1))}
+                    className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-zinc-800 font-bold"
+                  >
+                    +
                   </button>
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="pt-3 border-t border-slate-200 dark:border-zinc-800 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setBookingTrain(null)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-800 text-xs font-bold text-slate-600 dark:text-zinc-400"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmBooking}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-station-yellow text-black text-xs font-black uppercase tracking-wider shadow-md"
+              >
+                Add to Cart
+              </button>
+            </div>
           </div>
         </div>
       )}

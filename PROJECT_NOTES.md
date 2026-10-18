@@ -58,7 +58,7 @@
 ## 4. Codebase Directory Structure
 
 ```
-RailSync-main-2/
+RailSync/
 ├── app/
 │   ├── api/                     # Serverless backend API routes
 │   │   ├── config/route.js      # Runtime RailKit API key status & update
@@ -68,26 +68,47 @@ RailSync-main-2/
 │   │   ├── station-board/route.js# Station platform arrival/departure board
 │   │   └── stations/route.js    # 7,300+ stations autocomplete search
 │   ├── globals.css              # Design tokens, signal lamps, animations
-│   ├── layout.js                # Root layout with fonts & ThemeProvider
-│   └── page.js                  # Main orchestrator (tab state & active train)
+│   ├── layout.js                # Root layout with ThemeProvider & AppProvider
+│   └── page.js                  # Main orchestrator (SPA routing, breadcrumbs, modals)
 ├── components/
+│   ├── forms/                   # Reusable Form Input Component Suite
+│   │   ├── FormInput.js         # Controlled input with validation & touched state
+│   │   ├── StationSelect.js     # Fuzzy debounced station autocomplete & keyboard nav
+│   │   ├── SelectDropdown.js    # Reusable dropdown for Class, Quota & Preferences
+│   │   └── useFormValidation.js # Custom form validation hook
 │   ├── ApiKeyModal.js           # Modal drawer for custom API key configuration
 │   ├── BerthMap.js              # 8-berth compartment cutaway bay diagram
+│   ├── CartDrawer.js            # Shopping Cart Mini-Project: Journey Booking Drawer
 │   ├── CoachLayout.js           # Full train rake coach diagram with highlighted coach
+│   ├── ControlDashboard.js      # Dashboard Mini-Project: Executive Operational Center
+│   ├── DigitalTicketModal.js    # Printable IRCTC E-Ticket Boarding Pass with QR code
+│   ├── EmergencyDrawer.js       # RailMadad 139 Emergency Helpline Desk
+│   ├── FareCalculator.js        # Dynamic Telescopic Fare Matrix & Distance Estimator
 │   ├── HomePage.js              # Landing page (hero, stats, capabilities, FAQ)
-│   ├── LiveTracker.js           # Live telemetry dashboard (speed, delay, HUD)
-│   ├── Navbar.js                # Navigation header, clock, chime toggle, theme switch
+│   ├── LiveTracker.js           # Live telemetry dashboard (speed, delay, HUD, voice)
+│   ├── Navbar.js                # Nav header, clock, cart badge, chime, 139 SOS
+│   ├── PlatformCoachVisualizer.js# Platform coach halting layout & pillar alignment
 │   ├── PnrSection.js            # PNR status inquiry & dot-matrix chart
+│   ├── PortfolioShowcase.js     # PE-I System Architecture & Developer Portfolio
 │   ├── RouteRibbon.js           # Vertical permanent way track ribbon
-│   ├── SearchSection.js         # Dual-mode station & train search
-│   ├── StationBoard.js          # Platform split-flap electronic board
+│   ├── SearchSection.js         # Dual-mode station & train search with Cart booking
+│   ├── StationBoard.js          # Platform split-flap board with voice broadcast
 │   ├── ThemeProvider.js         # Light/Dark mode context with URL param support
+│   ├── ToastContainer.js        # Floating railway notification toasts
 │   └── TrackMap.js              # Leaflet GIS corridor map with train markers
+├── context/
+│   └── AppContext.js            # Global Context API: Watchlist, Toasts, Lang, Audio
+├── db/
+│   └── schema.sql               # Relational DBMS 3NF SQL schema & sample queries
 ├── lib/
-│   ├── audio-chime.js           # Web Audio API 4-tone station chime synthesizer
+│   ├── audio-chime.js           # Web Audio API 4-tone chime + Web Speech API voice
+│   ├── db.js                    # Relational query execution engine & joins
 │   ├── railkit.js               # RailKit SDK adapter & mock data fallbacks
 │   └── stations-data.js         # 7,300+ station database & geospatial coordinates
-├── package.json                 # Project dependencies & scripts
+├── store/
+│   ├── useCartStore.js          # Zustand store for Journey Shopping Cart
+│   └── useDashboardStore.js     # Zustand store for Operational Control Desk
+├── package.json                 # Dependencies (Next.js, React, Zustand, Leaflet)
 ├── tailwind.config.js           # Tailwind color & font configuration
 └── README.md                    # Project readme
 ```

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Train, RefreshCw, AlertCircle, Clock, Navigation, Gauge, MapPin, CheckCircle, Radio, Volume2 } from 'lucide-react';
+import { Train, RefreshCw, AlertCircle, Clock, Navigation, Gauge, MapPin, CheckCircle, Radio, Volume2, Star } from 'lucide-react';
 import RouteRibbon from './RouteRibbon';
 import CoachLayout from './CoachLayout';
 import { playRailwayChime } from '@/lib/audio-chime';
+import { useApp } from '@/context/AppContext';
 
 // Dynamically import Leaflet TrackMap with SSR disabled
 const TrackMap = dynamic(() => import('./TrackMap'), {
@@ -19,6 +20,7 @@ const TrackMap = dynamic(() => import('./TrackMap'), {
 });
 
 export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSearch }) {
+  const { watchlist, addToWatchlist, removeFromWatchlist, isWatchlisted, triggerTrainAnnouncement } = useApp();
   const [trainNumber, setTrainNumber] = useState(initialTrainNumber);
   const [dateSelection, setDateSelection] = useState('today');
   const [trainData, setTrainData] = useState(null);
@@ -87,6 +89,8 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
     signalClass = 'amber';
     delayBadgeClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700';
   }
+
+  const inWatchlist = trainData ? isWatchlisted(trainData.trainNumber) : false;
 
   return (
     <div className="space-y-6">
@@ -197,8 +201,40 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
               </div>
             </div>
 
-            {/* Live Operational Status Badge */}
-            <div className="flex items-center gap-3">
+            {/* Live Operational Status Badge & Actions */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Watchlist Toggle */}
+              <button
+                type="button"
+                onClick={() => inWatchlist ? removeFromWatchlist(trainData.trainNumber) : addToWatchlist(trainData)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-mono font-bold transition-colors ${
+                  inWatchlist
+                    ? 'border-amber-400 bg-amber-500/10 text-station-yellow'
+                    : 'border-slate-300 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-station-yellow'
+                }`}
+                title={inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+              >
+                <Star size={13} fill={inWatchlist ? 'currentColor' : 'none'} />
+                <span className="hidden sm:inline">{inWatchlist ? 'WATCHLISTED' : 'WATCHLIST'}</span>
+              </button>
+
+              {/* Station Audio Announcement */}
+              <button
+                type="button"
+                onClick={() => triggerTrainAnnouncement({
+                  trainNumber: trainData.trainNumber,
+                  trainName: trainData.trainName,
+                  origin: trainData.origin,
+                  destination: trainData.destination,
+                  platform: '1',
+                })}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-station-yellow text-xs font-mono text-slate-700 dark:text-zinc-300 transition-colors"
+                title="Broadcast Audio Announcement"
+              >
+                <Volume2 size={13} className="text-amber-500" />
+                <span className="hidden sm:inline">ANNOUNCE</span>
+              </button>
+
               <span className={`signal-lamp ${signalClass} signal-pulse`}></span>
               <div className={`px-3 py-1.5 rounded-md border text-xs font-mono font-bold tracking-wide ${delayBadgeClass}`}>
                 {delay === 0 ? 'ON TIME (RIGHT TIME)' : `DELAYED BY ${delay} MINS`}

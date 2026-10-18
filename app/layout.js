@@ -1,9 +1,10 @@
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { AppProvider } from '@/context/AppContext';
 
 export const metadata = {
-  title: 'RailSync — Indian Railways Live Tracker & PNR Status',
+  title: 'RailSync — Indian Railways Live Telemetry, PRS & GIS Engine',
   description: 'Live train running status, physical permanent way track view, and coach reservation chart status for Indian Railways.',
 };
 
@@ -42,7 +43,9 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          {children}
+          <AppProvider>
+            {children}
+          </AppProvider>
         </ThemeProvider>
       </body>
     </html>

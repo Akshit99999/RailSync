@@ -1,34 +1,36 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Radio, Search, Clock, ArrowRight, RefreshCw, AlertCircle, Train, MapPin, Filter, Volume2, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Radio, 
+  Search, 
+  Clock, 
+  ArrowRight, 
+  RefreshCw, 
+  AlertCircle, 
+  Train, 
+  MapPin, 
+  Filter, 
+  Volume2, 
+  LayoutGrid, 
+  Layers 
+} from 'lucide-react';
 import { playRailwayChime } from '@/lib/audio-chime';
+import StationSelect from './forms/StationSelect';
+import PlatformCoachVisualizer from './PlatformCoachVisualizer';
+import { useApp } from '@/context/AppContext';
 
 export default function StationBoard({ onTrackTrain }) {
   const [selectedStation, setSelectedStation] = useState({ code: 'NDLS', name: 'New Delhi', state: 'Delhi' });
-  const [stationInput, setStationInput] = useState('New Delhi (NDLS)');
-  const [suggestions, setSuggestions] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-
   const [hoursWindow, setHoursWindow] = useState(2);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'DEPARTURE' | 'ARRIVAL'
   const [isLoading, setIsLoading] = useState(false);
   const [boardData, setBoardData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [lastRefreshed, setLastRefreshed] = useState(null);
+  const [activePlatformVisualizer, setActivePlatformVisualizer] = useState(null);
 
-  const dropdownRef = useRef(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const { triggerTrainAnnouncement } = useApp();
 
   // Fetch board data
   const fetchStationBoard = async (stnCode = selectedStation.code, hours = hoursWindow) => {
@@ -55,42 +57,10 @@ export default function StationBoard({ onTrackTrain }) {
   };
 
   useEffect(() => {
-    fetchStationBoard(selectedStation.code, hoursWindow);
+    if (selectedStation?.code) {
+      fetchStationBoard(selectedStation.code, hoursWindow);
+    }
   }, [selectedStation, hoursWindow]);
-
-  // Autocomplete search
-  const handleQueryChange = async (e) => {
-    const val = e.target.value;
-    setStationInput(val);
-    setShowDropdown(true);
-
-    if (!val || val.trim().length === 0) {
-      setSuggestions([]);
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/stations?q=${encodeURIComponent(val)}`);
-      const data = await res.json();
-      if (data.success && data.stations) {
-        setSuggestions(data.stations);
-      }
-    } catch (err) {
-      console.warn('Station search failed:', err);
-    }
-  };
-
-  const handleClearStation = () => {
-    setStationInput('');
-    setSuggestions([]);
-    setShowDropdown(false);
-  };
-
-  const handleSelectStation = (stn) => {
-    setSelectedStation(stn);
-    setStationInput(`${stn.name} (${stn.code})`);
-    setShowDropdown(false);
-  };
 
   // Filter trains
   const filteredTrains = (boardData?.trains || []).filter((t) => {
@@ -99,167 +69,97 @@ export default function StationBoard({ onTrackTrain }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono">
       {/* Search & Controller Card */}
-      <div className="station-signboard p-4 sm:p-6 rounded-lg">
+      <div className="station-signboard p-4 sm:p-6 rounded-2xl shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
-            <span className="station-code-pill text-xs">DISPLAY BOARD</span>
+            <span className="station-code-pill text-xs">ELECTRONIC BOARD</span>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-wide">
-              STATION LIVE ARRIVALS & DEPARTURES
+              STATION PLATFORM TELEMETRY BOARD
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-md border border-slate-200 dark:border-zinc-800 text-xs font-mono">
-              <button
-                type="button"
-                onClick={() => setHoursWindow(2)}
-                className={`px-2.5 py-1 rounded font-bold transition-all ${hoursWindow === 2 ? 'bg-station-yellow text-black shadow-sm' : 'text-slate-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'}`}
-              >
-                Next 2h
-              </button>
-              <button
-                type="button"
-                onClick={() => setHoursWindow(4)}
-                className={`px-2.5 py-1 rounded font-bold transition-all ${hoursWindow === 4 ? 'bg-station-yellow text-black shadow-sm' : 'text-slate-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'}`}
-              >
-                Next 4h
-              </button>
-              <button
-                type="button"
-                onClick={() => setHoursWindow(8)}
-                className={`px-2.5 py-1 rounded font-bold transition-all ${hoursWindow === 8 ? 'bg-station-yellow text-black shadow-sm' : 'text-slate-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'}`}
-              >
-                Next 8h
-              </button>
-            </div>
-
+          <div className="flex items-center gap-2 text-xs">
+            {lastRefreshed && (
+              <span className="text-slate-500 dark:text-zinc-400 hidden sm:inline">
+                UPDATED: {lastRefreshed}
+              </span>
+            )}
             <button
-              onClick={() => fetchStationBoard(selectedStation.code, hoursWindow)}
+              onClick={() => fetchStationBoard()}
               disabled={isLoading}
+              className="p-1.5 rounded-lg border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-station-yellow text-slate-700 dark:text-zinc-300 transition-colors"
               title="Refresh Display Board"
-              className="p-2 rounded-md bg-slate-100 dark:bg-zinc-900 hover:bg-amber-100 dark:hover:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-amber-700 dark:text-station-yellow transition-colors"
             >
-              <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+              <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
             </button>
           </div>
         </div>
 
-        {/* Station Autocomplete Input */}
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-          <div className="md:col-span-7 relative" ref={dropdownRef}>
-            <label className="block text-xs font-mono text-amber-700 dark:text-station-yellow font-bold uppercase mb-1">
-              Select Indian Railways Station
+        {/* Controls Grid: Station Search & Time Filter */}
+        <div className="mt-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          {/* Station Select */}
+          <div className="md:col-span-6">
+            <StationSelect
+              label="SELECT RAILWAY STATION"
+              value={selectedStation}
+              onChange={(st) => st && setSelectedStation(st)}
+              required
+            />
+          </div>
+
+          {/* Time Window Filter */}
+          <div className="md:col-span-3">
+            <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
+              LOOKAHEAD TIME WINDOW
             </label>
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                value={stationInput}
-                onChange={handleQueryChange}
-                onFocus={() => {
-                  if (suggestions.length > 0) setShowDropdown(true);
-                }}
-                placeholder="Search station by name or code (e.g. NDLS, CSMT, HWH)..."
-                className="rail-input font-medium pr-16"
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-slate-400 dark:text-zinc-500">
-                {stationInput && (
-                  <button
-                    type="button"
-                    onClick={handleClearStation}
-                    className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors"
-                    title="Clear station"
-                    aria-label="Clear station"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-                <MapPin size={16} className="pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Dropdown list */}
-            {showDropdown && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border-2 border-yellow-400 dark:border-station-yellow rounded-md z-30 max-h-60 overflow-y-auto shadow-2xl">
-                {suggestions.map((stn) => (
-                  <div
-                    key={stn.code}
-                    onClick={() => handleSelectStation(stn)}
-                    className="px-3.5 py-2.5 hover:bg-amber-50 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 last:border-b-0 transition-colors"
-                  >
-                    <div>
-                      <span className="font-semibold text-slate-900 dark:text-white text-sm">{stn.name}</span>
-                      <span className="text-xs text-slate-500 dark:text-zinc-400 ml-2">({stn.state})</span>
-                    </div>
-                    <span className="station-code-pill text-xs">{stn.code}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Quick preset chips */}
-          <div className="md:col-span-5 flex flex-wrap gap-1.5 pt-4 md:pt-0">
-            <span className="text-xs font-mono text-slate-600 dark:text-zinc-400 font-bold w-full mb-1">MAJOR TERMINALS:</span>
-            {[
-              { code: 'NDLS', name: 'New Delhi' },
-              { code: 'CSMT', name: 'Mumbai CSMT' },
-              { code: 'HWH', name: 'Howrah Jn' },
-              { code: 'MAS', name: 'Chennai Central' },
-              { code: 'SBC', name: 'KSR Bengaluru' },
-              { code: 'BPL', name: 'Bhopal Jn' }
-            ].map((stn) => (
-              <button
-                key={stn.code}
-                type="button"
-                onClick={() => handleSelectStation(stn)}
-                className={`text-xs px-2.5 py-1 rounded font-mono font-bold transition-all ${
-                  selectedStation.code === stn.code
-                    ? 'bg-station-yellow text-black shadow-sm'
-                    : 'bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 hover:text-black dark:hover:text-white border border-slate-200 dark:border-zinc-800'
-                }`}
-              >
-                {stn.code}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Filter Bar */}
-        <div className="mt-5 pt-3 border-t border-slate-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Filter size={14} className="text-amber-600 dark:text-station-yellow" />
-            <span className="text-xs font-mono text-slate-600 dark:text-zinc-400 font-bold">FILTER:</span>
-            <div className="flex gap-1.5">
-              {['ALL', 'DEPARTURE', 'ARRIVAL'].map((type) => (
+            <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300 dark:border-zinc-800 text-xs">
+              {[2, 4, 8].map((hrs) => (
                 <button
-                  key={type}
+                  key={hrs}
                   type="button"
-                  onClick={() => setFilterType(type)}
-                  className={`text-xs px-3 py-1 rounded-md font-mono font-bold transition-all ${
-                    filterType === type
-                      ? 'bg-station-yellow text-black shadow-sm'
-                      : 'bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-slate-200 dark:border-zinc-800'
+                  onClick={() => setHoursWindow(hrs)}
+                  className={`flex-1 py-1.5 font-bold rounded-lg transition-all ${
+                    hoursWindow === hrs
+                      ? 'bg-amber-500 dark:bg-station-yellow text-black shadow-sm'
+                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  {type === 'ALL' ? 'ALL TRAINS' : type === 'DEPARTURE' ? 'DEPARTURES' : 'ARRIVALS'}
+                  {hrs} Hours
                 </button>
               ))}
             </div>
           </div>
 
-          {lastRefreshed && (
-            <span className="text-xs font-mono text-slate-500 dark:text-zinc-500">
-              Synced at {lastRefreshed}
-            </span>
-          )}
+          {/* Movement Type Filter */}
+          <div className="md:col-span-3">
+            <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
+              MOVEMENT DIRECTION
+            </label>
+            <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300 dark:border-zinc-800 text-xs">
+              {['ALL', 'DEPARTURE', 'ARRIVAL'].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setFilterType(t)}
+                  className={`flex-1 py-1.5 font-bold rounded-lg transition-all ${
+                    filterType === t
+                      ? 'bg-amber-500 dark:bg-station-yellow text-black shadow-sm'
+                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {t === 'DEPARTURE' ? 'Dep' : t === 'ARRIVAL' ? 'Arr' : 'All'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Error alert */}
+      {/* Error Notice */}
       {errorMessage && (
-        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-md text-rose-800 dark:text-rose-200 text-xs sm:text-sm flex items-start gap-2.5">
+        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-200 text-xs flex items-start gap-2.5">
           <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           <div className="flex-1">
             <span className="font-bold">DISPLAY BOARD NOTICE: </span>
@@ -269,7 +169,7 @@ export default function StationBoard({ onTrackTrain }) {
       )}
 
       {/* Electronic Departure / Arrival Display Board Table */}
-      <div className="station-signboard p-4 sm:p-5 rounded-lg space-y-4">
+      <div className="station-signboard p-4 sm:p-5 rounded-2xl space-y-4 shadow-sm">
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
           <div className="flex items-center gap-2.5">
             <span className="station-code-pill text-sm">{selectedStation.code}</span>
@@ -278,22 +178,22 @@ export default function StationBoard({ onTrackTrain }) {
             </h3>
           </div>
           <span className="text-xs font-mono text-amber-700 dark:text-station-yellow font-bold">
-            SHOWING {filteredTrains.length} TRAIN MOVEMENTS
+            SHOWING {filteredTrains.length} MOVEMENTS
           </span>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-md border border-slate-200 dark:border-zinc-800">
-          <table className="w-full text-left border-collapse font-mono text-xs sm:text-sm">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-zinc-800">
+          <table className="w-full text-left border-collapse text-xs sm:text-sm">
             <thead>
               <tr className="bg-amber-50/70 dark:bg-zinc-950 text-amber-900 dark:text-station-yellow border-b border-slate-200 dark:border-zinc-800 font-bold">
                 <th className="py-2.5 px-3">TRAIN NO & NAME</th>
                 <th className="py-2.5 px-3">TYPE</th>
-                <th className="py-2.5 px-3">ROUTE (CORRIDOR)</th>
-                <th className="py-2.5 px-3">SCHED / EXP TIME</th>
-                <th className="py-2.5 px-3">PLATFORM</th>
+                <th className="py-2.5 px-3">CORRIDOR</th>
+                <th className="py-2.5 px-3">SCHED / EXP</th>
+                <th className="py-2.5 px-3 text-center">PLATFORM</th>
                 <th className="py-2.5 px-3">STATUS & DELAY</th>
-                <th className="py-2.5 px-3 text-right">ACTION</th>
+                <th className="py-2.5 px-3 text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-850 bg-white dark:bg-zinc-900/60">
@@ -344,10 +244,14 @@ export default function StationBoard({ onTrackTrain }) {
                       </td>
 
                       {/* Platform */}
-                      <td className="py-3 px-3">
-                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-black text-amber-800 dark:text-station-yellow font-black rounded border border-amber-300 dark:border-yellow-500/40 text-xs">
-                          PF {train.platform || '--'}
-                        </span>
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          onClick={() => setActivePlatformVisualizer(activePlatformVisualizer?.trainNumber === train.trainNumber ? null : train)}
+                          className="px-2 py-0.5 bg-slate-100 dark:bg-black text-amber-800 dark:text-station-yellow font-black rounded-lg border border-amber-300 dark:border-yellow-500/40 text-xs hover:border-station-yellow transition-colors"
+                          title="Click to view coach layout on platform"
+                        >
+                          PF {train.platform || '1'} 🔍
+                        </button>
                       </td>
 
                       {/* Status */}
@@ -360,15 +264,33 @@ export default function StationBoard({ onTrackTrain }) {
                         </div>
                       </td>
 
-                      {/* Action */}
+                      {/* Actions */}
                       <td className="py-3 px-3 text-right">
-                        <button
-                          onClick={() => onTrackTrain(train.trainNumber)}
-                          className="rail-btn-primary text-xs py-1.5 px-3"
-                        >
-                          <Train size={13} />
-                          <span>Track</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Audio Announcement Button */}
+                          <button
+                            onClick={() => triggerTrainAnnouncement({
+                              trainNumber: train.trainNumber,
+                              trainName: train.trainName,
+                              origin: train.origin,
+                              destination: train.destination,
+                              platform: train.platform || '1'
+                            })}
+                            className="p-1.5 rounded-lg border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-station-yellow text-slate-700 dark:text-zinc-300 transition-colors"
+                            title="Play Station Audio Announcement"
+                          >
+                            <Volume2 size={13} className="text-amber-500" />
+                          </button>
+
+                          {/* Track Button */}
+                          <button
+                            onClick={() => onTrackTrain(train.trainNumber)}
+                            className="rail-btn-primary text-xs py-1.5 px-3"
+                          >
+                            <Train size={13} />
+                            <span>Track</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -384,6 +306,17 @@ export default function StationBoard({ onTrackTrain }) {
           </table>
         </div>
       </div>
+
+      {/* Expandable Platform Coach Visualizer */}
+      {activePlatformVisualizer && (
+        <div className="animate-fadeIn">
+          <PlatformCoachVisualizer
+            platform={activePlatformVisualizer.platform || '1'}
+            trainNumber={activePlatformVisualizer.trainNumber}
+            trainName={activePlatformVisualizer.trainName}
+          />
+        </div>
+      )}
     </div>
   );
 }

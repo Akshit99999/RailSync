@@ -299,6 +299,86 @@ ADVANCED TOPICS COVERED BEYOND STANDARD SYLLABUS
     fallback simulations for all major Indian train corridors.
   - Files: components/BerthMap.js, components/CoachLayout.js, components/RouteRibbon.js, lib/railkit.js
 
+[MODULE 55-60] STATE ARCHITECTURE: CONTEXT API & ZUSTAND STORE
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - Context API & state architecture in React apps
+  - Global vs local state separation of concerns
+  - Intro to Redux Toolkit or Zustand store pattern
+  - Async state handling (idle, loading, success, error)
+  - Mini project: Journey shopping cart & operational dashboard
+
+• How RailSync Covers Them:
+  1. Global Context API (context/AppContext.js):
+     - Centralized application provider managing theme, preferred language (Hindi/English),
+       audio state, toast alerts, watchlist, and emergency drawers.
+     - Custom hook useApp() exposing unified actions without prop-drilling.
+  2. Zustand Store: Ticket Reservation Shopping Cart (store/useCartStore.js):
+     - Implements shopping cart mini-project with pricing math, IRCTC telescopic slabs,
+       Tatkal/General quota surcharges, coupon discounts (RAIL10, STUDENT20), and localStorage persistence.
+  3. Zustand Store: Operational Control Desk Dashboard (store/useDashboardStore.js):
+     - Implements dashboard mini-project with asynchronous state lifecycle,
+       network punctuality KPIs, delay distribution, zonal analytics, and caution orders.
+  4. Async State & Error Handling:
+     - Standardized lifecycle modeling ({ status: 'idle'|'loading'|'success'|'error', error })
+       with retry logic and UI error alerts.
+
+
+[MODULE 61-66] FORM HANDLING IN REACT & VALIDATION STRATEGIES
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - Controlled vs uncontrolled inputs
+  - Form validation strategies (regex, touch tracking, instant error reporting)
+  - Reusable form component architecture
+  - Custom form validation hook
+
+• How RailSync Covers Them:
+  1. Reusable FormInput Component (components/forms/FormInput.js):
+     - Floating labels, prefix/suffix icons, regex validation, touched/dirty state tracking,
+       clear button, and accessible aria-labels.
+  2. Reusable StationSelect Component (components/forms/StationSelect.js):
+     - Fuzzy debounced autocomplete across 7,300+ stations, keyboard navigation (arrows/enter),
+       and DOM click-outside listener via useRef.
+  3. Reusable SelectDropdown Component (components/forms/SelectDropdown.js):
+     - Custom styled dropdown for travel class, quota, and berth preferences.
+  4. Custom Hook useFormValidation (components/forms/useFormValidation.js):
+     - Encapsulates values, errors, touched, and async submission handling.
+
+
+[MODULE 67-72] RELATIONAL DATABASE MANAGEMENT SYSTEMS (DBMS) & SQL ARCHITECTURE
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - Relational schema design and 3NF normalization
+  - Primary keys, foreign keys, and referential integrity
+  - Complex SQL queries (JOINs, GROUP BY, aggregations)
+  - Relational query execution engine
+
+• How RailSync Covers Them:
+  1. Relational SQL Schema (db/schema.sql):
+     - Full 3NF schema modeling: stations, trains, train_schedules, bookings,
+       passengers, users, and train_reviews.
+     - Foreign key cascades, composite unique constraints, and B-tree indexes.
+  2. Relational Query Engine (lib/db.js):
+     - Implements SQL-equivalent operations (JOIN between trains and schedules,
+       WHERE filtering, multi-stop route matching, and zonal aggregations).
+
+
+[MODULE 73-78] MULTI-PAGE SPA DESIGN, DEEP LINKING & PORTFOLIO SITE
+--------------------------------------------------------------------------------
+• Curriculum Topics:
+  - Multi-page SPA navigation layout and page structure
+  - Breadcrumbs and history pushState routing
+  - Mini project: Portfolio site with routing
+
+• How RailSync Covers Them:
+  1. Multi-Page SPA Navigation Architecture:
+     - Deep linking with URL query parameters (?tab=...&train=...), window.history.pushState,
+       and popstate event handling for browser back/forward buttons without page reloads.
+     - Breadcrumb navigation component dynamically reflecting the active hierarchy.
+  2. Mini-Project: System Portfolio & Tech Showcase (components/PortfolioShowcase.js):
+     - Dedicated portfolio view highlighting PE-I topic coverage, developer profile,
+       interactive code sandbox tabs, and engineering architecture diagrams.
+
 ================================================================================
 SUMMARY CHECKLIST FOR VIVAS / INTERVIEWS / ASSIGNMENTS
 ================================================================================
@@ -308,13 +388,21 @@ SUMMARY CHECKLIST FOR VIVAS / INTERVIEWS / ASSIGNMENTS
 [x] ES6+ Modern JavaScript (Destructuring, Spread, Arrow Functions)
 [x] Asynchronous JS (Promises, Async/Await, Fetch API)
 [x] React Component Architecture & Declarative JSX
-[x] Controlled Form Inputs & Validation
+[x] Controlled Form Inputs & Validation Strategies
+[x] Reusable Form Components (FormInput, StationSelect, SelectDropdown)
 [x] React Hooks: useState, useEffect (with cleanup), useRef
 [x] State Lifting & Inter-Component Communication
-[x] Custom Context & Custom Hook (useTheme)
-[x] Next.js 14 App Router & Single Page Application (SPA) Tab Routing
+[x] Global Context API (AppContext) vs Local State Architecture
+[x] Zustand State Management (Shopping Cart & Operational Dashboard)
+[x] Multi-Page SPA Navigation Layout with History API Deep Linking
+[x] Interactive Portfolio Showcase Site Mini-Project
 [x] Full-Stack Serverless Backend API Route Handlers
 [x] GIS Route Mapping with Leaflet.js & Dynamic Imports
 [x] Native Browser Web Audio API Acoustic Sound Synthesis
-[x] Offline Resilience & Dynamic Mock Fallback Data Architecture
+[x] Native Browser Web Speech API Bilingual Station Announcements
+[x] IRCTC PRS Telescopic Fare Calculator & Distance Matrix
+[x] Platform Coach Halting Schematic Visualizer
+[x] Digital Printable E-Ticket Boarding Pass with QR Code
+[x] Relational Database (DBMS) 3NF Schema & SQL Queries
 ================================================================================
+
