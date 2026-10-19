@@ -6,6 +6,17 @@ Compliant with full-stack **Front-End Engineering (FEE)** and **Relational Datab
 
 ---
 
+## 📚 Technical Documentation & System Blueprints
+
+| Guide | Description | Target Link |
+|---|---|---|
+| **System Architecture** | Multi-tier topology, layer breakdown, sequence diagrams, data flow pipelines, and DBMS 3NF schema. | [`ARCHITECTURE.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/ARCHITECTURE.md) |
+| **Architecture Decisions** | 10 formal Architecture Decision Records (ADRs) explaining technical trade-offs and rationale. | [`DECISIONS.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/DECISIONS.md) |
+| **Component Reference** | Deep dive into every component, hook, store, and utility: what it does, how it works, functions called, and terminology glossary. | [`COMPONENTS.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/COMPONENTS.md) |
+| **Database Schema** | Relational 3NF SQL schema with stations, trains, schedules, bookings, passengers, and reviews. | [`db/schema.sql`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/db/schema.sql) |
+
+---
+
 ## 🌟 Key Features Overview
 
 ### 1. 🌐 Landing Page & Operational Overview (`components/HomePage.js`)
