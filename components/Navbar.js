@@ -32,12 +32,14 @@ import { isAudioEnabled, toggleAudio, playRailwayChime } from '@/lib/audio-chime
 import { useTheme } from './ThemeProvider';
 import { useCartStore } from '@/store/useCartStore';
 import { useApp } from '@/context/AppContext';
+import WatchlistDrawer from './WatchlistDrawer';
 
 export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onTrackTrain }) {
   const { theme, toggleTheme, mounted } = useTheme();
   const { 
     setEmergencyDrawerOpen, 
     watchlist, 
+    savedPnrs,
     language, 
     cycleLanguage 
   } = useApp();
@@ -48,6 +50,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onT
   const [audioActive, setAudioActive] = useState(true);
   const [apiStatus, setApiStatus] = useState({ configured: false });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isWatchlistOpen, setIsWatchlistOpen] = useState(false);
   const [navQuickTrain, setNavQuickTrain] = useState('');
 
   useEffect(() => {
@@ -251,6 +254,21 @@ export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onT
 
         {/* Right Action Icons: Watchlist, Cart, Quick Track */}
         <div className="flex items-center gap-2">
+          {/* Watchlist Trigger Button */}
+          <button
+            onClick={() => setIsWatchlistOpen(true)}
+            className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-station-yellow text-slate-700 dark:text-zinc-200 transition-all shadow-sm"
+            title="Saved Watchlist & Tracker"
+          >
+            <Star size={15} className="text-amber-500 fill-amber-500" />
+            <span className="hidden sm:inline text-xs font-bold">SAVED</span>
+            {(watchlist.length + savedPnrs.length) > 0 && (
+              <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 text-[10px] font-black flex items-center justify-center">
+                {watchlist.length + savedPnrs.length}
+              </span>
+            )}
+          </button>
+
           {/* Journey Cart Trigger Button */}
           <button
             onClick={() => setCartOpen(true)}
@@ -346,6 +364,14 @@ export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onT
           </div>
         </div>
       )}
+
+      {/* Watchlist Slide-over Drawer */}
+      <WatchlistDrawer
+        isOpen={isWatchlistOpen}
+        onClose={() => setIsWatchlistOpen(false)}
+        onTrackTrain={onTrackTrain}
+        onNavigate={setActiveTab}
+      />
     </header>
   );
 }
