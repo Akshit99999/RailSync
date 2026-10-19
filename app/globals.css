@@ -85,6 +85,13 @@
   padding: 0;
 }
 
+/* Hide native cursor on mouse/trackpad devices — GSAP CustomCursor takes over */
+@media (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}
+
 html {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
