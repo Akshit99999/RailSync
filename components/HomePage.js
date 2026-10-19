@@ -26,6 +26,7 @@ import {
   Code2
 } from 'lucide-react';
 import { playRailwayChime } from '@/lib/audio-chime';
+import { useTiltCard } from '@/hooks/useTiltCard';
 
 export default function HomePage({ onNavigate, onTrackTrain }) {
   const [heroTrainInput, setHeroTrainInput] = useState('');
@@ -329,67 +330,9 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
-          {features.map((feat) => {
-            const Icon = feat.icon;
-            return (
-              <div
-                key={feat.id}
-                onClick={() => onNavigate(feat.id)}
-                className="capability-card station-signboard p-6 rounded-xl flex flex-col justify-between space-y-4 group transition-all duration-300 relative overflow-hidden"
-              >
-                {/* Dynamic ambient hover lighting */}
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.08] via-transparent to-transparent dark:from-yellow-400/[0.06] dark:via-transparent dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                
-                {/* Luminous yellow track line on top when hovered */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-
-                {/* Decorative corner accent */}
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-yellow-400/15 dark:from-yellow-400/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                <div className="space-y-3 relative z-10">
-                  <div className="flex items-center justify-between">
-                    <div className="capability-icon-box w-11 h-11 rounded-lg bg-station-yellow text-black flex items-center justify-center font-bold shadow-md transition-all duration-300">
-                      <Icon size={22} className="transition-all" />
-                    </div>
-                    <span className="font-mono text-[10px] font-bold text-amber-800 dark:text-station-yellow bg-amber-100 dark:bg-zinc-900 px-2.5 py-1 rounded-full border border-amber-300 dark:border-zinc-800 transition-colors">
-                      {feat.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="capability-title text-lg font-black text-slate-900 dark:text-white transition-colors duration-200">
-                    {feat.title}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed transition-colors duration-200">
-                    {feat.desc}
-                  </p>
-
-                  <ul className="grid grid-cols-2 gap-2 pt-2 text-xs font-mono text-slate-700 dark:text-zinc-300">
-                    {feat.highlights.map((h, idx) => (
-                      <li key={idx} className="flex items-center gap-1.5">
-                        <span className="capability-check text-amber-600 dark:text-station-yellow font-bold transition-transform duration-200 inline-block">✓</span>
-                        <span className="transition-colors duration-200">{h}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-3 border-t border-slate-200 dark:border-zinc-800 relative z-10">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNavigate(feat.id);
-                    }}
-                    className="capability-action-btn rail-btn-secondary w-full justify-between text-xs py-2.5 px-4 font-bold transition-all duration-200 shadow-sm"
-                  >
-                    <span>{feat.actionText}</span>
-                    <ChevronRight size={15} className="transition-transform duration-200 text-slate-400" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          {features.map((feat) => (
+            <FeatureCard key={feat.id} feat={feat} onNavigate={onNavigate} />
+          ))}
         </div>
       </section>
 
@@ -409,34 +352,7 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {premierTrains.map((t) => (
-            <div
-              key={t.number}
-              onClick={() => onTrackTrain(t.number)}
-              className="p-4 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/80 hover:border-station-yellow hover:scale-[1.02] cursor-pointer transition-all space-y-2 shadow-sm"
-            >
-              <div className="flex items-center justify-between">
-                <span className="train-number-badge text-xs">{t.number}</span>
-                <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400">{t.type}</span>
-              </div>
-
-              <div className="font-bold text-sm text-slate-900 dark:text-white">
-                {t.name}
-              </div>
-
-              <div className="text-xs font-mono text-amber-700 dark:text-station-yellow font-bold">
-                {t.route}
-              </div>
-
-              <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-slate-500 dark:text-zinc-400">
-                <div className="flex items-center gap-1">
-                  <Gauge size={12} className="text-emerald-500" />
-                  <span>Max {t.speed}</span>
-                </div>
-                <span className="text-amber-600 dark:text-station-yellow font-bold group-hover:underline flex items-center gap-0.5">
-                  Track <ArrowRight size={11} />
-                </span>
-              </div>
-            </div>
+            <PremierTrainCard key={t.number} t={t} onTrackTrain={onTrackTrain} />
           ))}
         </div>
       </section>
@@ -512,3 +428,111 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
     </div>
   );
 }
+
+function FeatureCard({ feat, onNavigate }) {
+  const { ref, onMouseMove, onMouseLeave } = useTiltCard({ maxTilt: 9, speed: 0.35 });
+  const Icon = feat.icon;
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      data-cursor="EXPLORE"
+      onClick={() => onNavigate(feat.id)}
+      style={{ perspective: 1000, transformStyle: 'preserve-3d' }}
+      className="capability-card station-signboard p-6 rounded-xl flex flex-col justify-between space-y-4 group transition-all duration-300 relative overflow-hidden cursor-pointer"
+    >
+      {/* Dynamic ambient hover lighting */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.08] via-transparent to-transparent dark:from-yellow-400/[0.06] dark:via-transparent dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      
+      {/* Luminous yellow track line on top when hovered */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+
+      {/* Decorative corner accent */}
+      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-yellow-400/15 dark:from-yellow-400/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+      <div className="space-y-3 relative z-10 pointer-events-none">
+        <div className="flex items-center justify-between">
+          <div className="capability-icon-box w-11 h-11 rounded-lg bg-station-yellow text-black flex items-center justify-center font-bold shadow-md transition-all duration-300">
+            <Icon size={22} className="transition-all" />
+          </div>
+          <span className="font-mono text-[10px] font-bold text-amber-800 dark:text-station-yellow bg-amber-100 dark:bg-zinc-900 px-2.5 py-1 rounded-full border border-amber-300 dark:border-zinc-800 transition-colors">
+            {feat.badge}
+          </span>
+        </div>
+
+        <h3 className="capability-title text-lg font-black text-slate-900 dark:text-white transition-colors duration-200">
+          {feat.title}
+        </h3>
+
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed transition-colors duration-200">
+          {feat.desc}
+        </p>
+
+        <ul className="grid grid-cols-2 gap-2 pt-2 text-xs font-mono text-slate-700 dark:text-zinc-300">
+          {feat.highlights.map((h, idx) => (
+            <li key={idx} className="flex items-center gap-1.5">
+              <span className="capability-check text-amber-600 dark:text-station-yellow font-bold transition-transform duration-200 inline-block">✓</span>
+              <span className="transition-colors duration-200">{h}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="pt-3 border-t border-slate-200 dark:border-zinc-800 relative z-10">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate(feat.id);
+          }}
+          className="capability-action-btn rail-btn-secondary w-full justify-between text-xs py-2.5 px-4 font-bold transition-all duration-200 shadow-sm"
+        >
+          <span>{feat.actionText}</span>
+          <ChevronRight size={15} className="transition-transform duration-200 text-slate-400" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PremierTrainCard({ t, onTrackTrain }) {
+  const { ref, onMouseMove, onMouseLeave } = useTiltCard({ maxTilt: 8, speed: 0.35 });
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      data-cursor="TRACK"
+      onClick={() => onTrackTrain(t.number)}
+      style={{ perspective: 1000, transformStyle: 'preserve-3d' }}
+      className="p-4 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/80 hover:border-station-yellow cursor-pointer transition-all space-y-2 shadow-sm group"
+    >
+      <div className="flex items-center justify-between">
+        <span className="train-number-badge text-xs">{t.number}</span>
+        <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400">{t.type}</span>
+      </div>
+
+      <div className="font-bold text-sm text-slate-900 dark:text-white">
+        {t.name}
+      </div>
+
+      <div className="text-xs font-mono text-amber-700 dark:text-station-yellow font-bold">
+        {t.route}
+      </div>
+
+      <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-slate-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1">
+          <Gauge size={12} className="text-emerald-500" />
+          <span>Max {t.speed}</span>
+        </div>
+        <span className="text-amber-600 dark:text-station-yellow font-bold group-hover:underline flex items-center gap-0.5">
+          Track <ArrowRight size={11} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
