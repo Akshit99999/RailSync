@@ -2,6 +2,7 @@ import './globals.css';
 import 'leaflet/dist/leaflet.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AppProvider } from '@/context/AppContext';
+import CustomCursor from '@/components/CustomCursor';
 
 export const metadata = {
   title: 'RailSync — Indian Railways Live Telemetry, PRS & GIS Engine',
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <CustomCursor />
         <ThemeProvider>
           <AppProvider>
             {children}
