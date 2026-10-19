@@ -1,16 +1,18 @@
-'use client';
-
 import { useState } from 'react';
-import { Ticket, Search, AlertCircle, CheckCircle2, User, Calendar, MapPin, Train, Loader2 } from 'lucide-react';
+import { Ticket, Search, AlertCircle, CheckCircle2, User, Calendar, MapPin, Train, Loader2, Printer, Star } from 'lucide-react';
 import CoachLayout from './CoachLayout';
 import BerthMap from './BerthMap';
+import DigitalTicketModal from './DigitalTicketModal';
 import { playRailwayChime } from '@/lib/audio-chime';
+import { useApp } from '@/context/AppContext';
 
 export default function PnrSection() {
+  const { savePnr, savedPnrs, removePnr, addToast } = useApp();
   const [pnrInput, setPnrInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pnrData, setPnrData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showDigitalPass, setShowDigitalPass] = useState(false);
 
   const handlePnrSubmit = async (e) => {
     if (e) e.preventDefault();
@@ -138,13 +140,55 @@ export default function PnrSection() {
                 </h3>
               </div>
 
-              {/* Chart Preparation Status */}
-              <div className="flex items-center gap-2.5 bg-slate-50 dark:bg-zinc-900 px-3.5 py-2 rounded-md border border-slate-200 dark:border-zinc-800">
-                <span className="signal-lamp green signal-pulse"></span>
-                <div className="text-right">
-                  <div className="text-[10px] font-mono text-slate-500 dark:text-zinc-400">CHARTING STATUS</div>
-                  <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    {pnrData.chartStatus || 'CHART PREPARED'}
+              {/* Action Buttons: Save PNR & Print Boarding Pass */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const isSaved = savedPnrs.some(p => p.pnrNumber === pnrData.pnr);
+                    if (isSaved) {
+                      removePnr(pnrData.pnr);
+                    } else {
+                      savePnr({
+                        pnrNumber: pnrData.pnr,
+                        trainNumber: pnrData.trainNumber,
+                        trainName: pnrData.trainName,
+                        fromStation: pnrData.boardingPoint || pnrData.fromStation,
+                        toStation: pnrData.toStation,
+                        doj: pnrData.doj,
+                        chartStatus: pnrData.chartStatus,
+                      });
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono font-bold transition-all ${
+                    savedPnrs.some(p => p.pnrNumber === pnrData.pnr)
+                      ? 'border-amber-400 bg-amber-500/10 text-station-yellow'
+                      : 'border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 hover:border-station-yellow'
+                  }`}
+                  title="Bookmark this PNR"
+                >
+                  <Star size={13} fill={savedPnrs.some(p => p.pnrNumber === pnrData.pnr) ? 'currentColor' : 'none'} />
+                  <span>{savedPnrs.some(p => p.pnrNumber === pnrData.pnr) ? 'SAVED' : 'SAVE PNR'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDigitalPass(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 hover:bg-station-yellow text-black font-mono font-bold text-xs transition-all shadow-sm"
+                  title="Open Printable IRCTC E-Ticket Pass"
+                >
+                  <Printer size={13} />
+                  <span>PRINT PASS</span>
+                </button>
+
+                {/* Chart Preparation Status */}
+                <div className="flex items-center gap-2.5 bg-slate-50 dark:bg-zinc-900 px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800">
+                  <span className="signal-lamp green signal-pulse"></span>
+                  <div className="text-right">
+                    <div className="text-[9px] font-mono text-slate-500 dark:text-zinc-400">CHARTING</div>
+                    <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {pnrData.chartStatus || 'CHART PREPARED'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -263,6 +307,25 @@ export default function PnrSection() {
             coach={pnrData.coachPosition || pnrData.passengers?.[0]?.coach || 'B3'}
           />
         </div>
+      )}
+
+      {/* Digital Boarding Pass Modal */}
+      {showDigitalPass && pnrData && (
+        <DigitalTicketModal
+          ticket={{
+            pnr: pnrData.pnr,
+            trainNumber: pnrData.trainNumber,
+            trainName: pnrData.trainName,
+            fromStation: pnrData.boardingPoint || pnrData.fromStation,
+            toStation: pnrData.toStation,
+            travelDate: pnrData.doj,
+            travelClass: pnrData.reservationClass,
+            passengers: pnrData.passengers,
+            baseFare: 1650,
+          }}
+          isOpen={showDigitalPass}
+          onClose={() => setShowDigitalPass(false)}
+        />
       )}
     </div>
   );
