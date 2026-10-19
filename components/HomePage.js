@@ -21,7 +21,9 @@ import {
   Sliders, 
   HelpCircle,
   Sparkles,
-  Info
+  Info,
+  Calculator,
+  Code2
 } from 'lucide-react';
 import { playRailwayChime } from '@/lib/audio-chime';
 
@@ -78,8 +80,35 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
       badge: 'RESERVATION CHART',
       icon: Ticket,
       desc: 'Verify 10-digit PNR ticket numbers with authentic IRCTC dot-matrix chart styling, charting status, confirmed coach/berth details, and interactive 8-berth schematics.',
-      highlights: ['Confirmation & charting status', 'Passenger berth matrix', 'Platform rake coach visualizer', '8-berth cutaway bay schematic'],
+      highlights: ['Confirmation & charting status', 'Passenger berth matrix', 'Platform rake coach visualizer', 'Printable digital boarding pass'],
       actionText: 'Check PNR Status',
+    },
+    {
+      id: 'fare-calculator',
+      title: 'IRCTC Fare Matrix & Estimator',
+      badge: 'DYNAMIC PRICING',
+      icon: Calculator,
+      desc: 'Interactive distance-based fare calculator applying authentic IRCTC telescopic distance slabs, Superfast supplements, Tatkal quotas, and 5% AC GST.',
+      highlights: ['Telescopic distance formulas', 'Class breakdown (1A, 2A, 3A, SL)', 'Tatkal & Senior concession quotas', 'Instant add-to-cart booking'],
+      actionText: 'Calculate Ticket Fare',
+    },
+    {
+      id: 'dashboard',
+      title: 'Control Desk Operations Center',
+      badge: 'EXECUTIVE TELEMETRY',
+      icon: Gauge,
+      desc: 'Multi-zonal operational analytics dashboard tracking 13,000+ active rakes, network punctuality ratings, and real-time caution orders with asynchronous polling.',
+      highlights: ['Live punctuality percentage', 'Zonal performance filters (NR, WR, CR)', 'Active caution orders feed', 'Asynchronous state polling'],
+      actionText: 'Launch Control Desk',
+    },
+    {
+      id: 'portfolio',
+      title: 'PE-I Architecture & Portfolio Hub',
+      badge: 'TECHNICAL SHOWCASE',
+      icon: Code2,
+      desc: 'Comprehensive engineering portfolio documenting PE-I frontend & DBMS requirements, interactive code sandboxes, state management architecture, and SQL schemas.',
+      highlights: ['React 18 & SPA routing', 'Zustand shopping cart store', 'Global Context API architecture', 'Relational 3NF SQL database'],
+      actionText: 'Explore Architecture',
     },
   ];
 
@@ -170,53 +199,77 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
         </div>
 
         {/* Quick navigation action pill buttons */}
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-zinc-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <button
             onClick={() => onNavigate('search')}
-            className="p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
+            className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
           >
             <div className="flex items-center justify-between">
               <Compass size={18} className="text-amber-600 dark:text-station-yellow" />
-              <ArrowRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
             <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white">Train Search</div>
-            <div className="text-[11px] text-slate-500 dark:text-zinc-400">Between stations</div>
+            <div className="text-[10px] text-slate-500 dark:text-zinc-400">Between stations</div>
           </button>
 
           <button
             onClick={() => onNavigate('live')}
-            className="p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
+            className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
           >
             <div className="flex items-center justify-between">
               <Activity size={18} className="text-emerald-500" />
-              <ArrowRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
             <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white">Live GPS Tracker</div>
-            <div className="text-[11px] text-slate-500 dark:text-zinc-400">Corridor track map</div>
+            <div className="text-[10px] text-slate-500 dark:text-zinc-400">Corridor track map</div>
           </button>
 
           <button
             onClick={() => onNavigate('station-board')}
-            className="p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
+            className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
           >
             <div className="flex items-center justify-between">
               <LayoutGrid size={18} className="text-sky-500" />
-              <ArrowRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
             <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white">Station Board</div>
-            <div className="text-[11px] text-slate-500 dark:text-zinc-400">Platform departures</div>
+            <div className="text-[10px] text-slate-500 dark:text-zinc-400">Platform departures</div>
           </button>
 
           <button
             onClick={() => onNavigate('pnr')}
-            className="p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
+            className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
           >
             <div className="flex items-center justify-between">
               <Ticket size={18} className="text-amber-500" />
-              <ArrowRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
             <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white">PNR Status</div>
-            <div className="text-[11px] text-slate-500 dark:text-zinc-400">Chart & berth layout</div>
+            <div className="text-[10px] text-slate-500 dark:text-zinc-400">Chart & berth layout</div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('fare-calculator')}
+            className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <Calculator size={18} className="text-cyan-500" />
+              <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white">Fare Matrix</div>
+            <div className="text-[10px] text-slate-500 dark:text-zinc-400">Telescopic estimator</div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('dashboard')}
+            className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-yellow-400 dark:hover:border-station-yellow hover:scale-[1.02] transition-all text-left group shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <Gauge size={18} className="text-purple-500" />
+              <ArrowRight size={13} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white">Control Desk</div>
+            <div className="text-[10px] text-slate-500 dark:text-zinc-400">Zonal telemetry KPIs</div>
           </button>
         </div>
       </section>
