@@ -14,6 +14,7 @@ import ApiKeyModal from '@/components/ApiKeyModal';
 import CartDrawer from '@/components/CartDrawer';
 import EmergencyDrawer from '@/components/EmergencyDrawer';
 import ToastContainer from '@/components/ToastContainer';
+import SignalField from '@/components/SignalField';
 import { ChevronRight, Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
@@ -78,7 +79,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-black text-slate-900 dark:text-zinc-100 transition-colors duration-200 font-mono">
+    <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-black text-slate-900 dark:text-zinc-100 transition-colors duration-200 font-mono relative">
+      {/* Background HTML5 Canvas Particle Field */}
+      <SignalField />
+
       {/* Navigation Bar */}
       <Navbar
         activeTab={activeTab}
