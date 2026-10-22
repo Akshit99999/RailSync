@@ -34,6 +34,7 @@ import KineticHeadline from './KineticHeadline';
 import MagneticButton from './MagneticButton';
 import AccordionFAQ from './AccordionFAQ';
 import BookingWizard from './BookingWizard';
+import RandomLogoArrival from './RandomLogoArrival';
 
 export default function HomePage({ onNavigate, onTrackTrain }) {
   const [heroTrainInput, setHeroTrainInput] = useState('');
@@ -196,12 +197,29 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
               <span>RAILSYNC TELEMETRY v2.5 • 13,420 ACTIVE RAKES • 91.4% PUNCTUALITY</span>
             </div>
 
-            {/* Giant Overprint Kinetic Display Headline */}
-            <div className="text-hero-clamp font-black">
-              <KineticHeadline
-                text="REAL-TIME RAILWAY TELEMETRY & PRS ENGINE"
-                highlightWord="TELEMETRY"
-              />
+            {/* Brand Title Row: Randomized Warp Logo + RAILSYNC Kinetic Display Title */}
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap pt-1">
+              <RandomLogoArrival />
+              <div className="flex flex-col">
+                <KineticHeadline
+                  text="RAILSYNC"
+                  highlightWord="RAILSYNC"
+                  className="text-5xl sm:text-7xl lg:text-8xl font-black text-amber-500 dark:text-station-yellow tracking-tighter drop-shadow-[0_12px_32px_rgba(255,210,0,0.55)] leading-none"
+                />
+                <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.22em] text-slate-500 dark:text-zinc-400 uppercase pt-2 flex items-center gap-2">
+                  <span>INDIAN RAILWAYS TELEMETRY & PRS</span>
+                  <span className="text-amber-500">•</span>
+                  <span className="text-emerald-500 font-extrabold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                    LIVE
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            {/* Sub-headline description */}
+            <div className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+              Real-Time Locomotive Intelligence, GIS Route Corridors & PRS Reservation Schematics
             </div>
 
             <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-300 leading-relaxed font-sans max-w-2xl">
