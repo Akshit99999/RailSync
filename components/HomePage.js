@@ -35,6 +35,7 @@ import MagneticButton from './MagneticButton';
 import AccordionFAQ from './AccordionFAQ';
 import BookingWizard from './BookingWizard';
 import RandomLogoArrival from './RandomLogoArrival';
+import StereoscopicTitle from './StereoscopicTitle';
 
 export default function HomePage({ onNavigate, onTrackTrain }) {
   const [heroTrainInput, setHeroTrainInput] = useState('');
@@ -197,16 +198,15 @@ export default function HomePage({ onNavigate, onTrackTrain }) {
               <span>RAILSYNC TELEMETRY v2.5 • 13,420 ACTIVE RAKES • 91.4% PUNCTUALITY</span>
             </div>
 
-            {/* Brand Title Row: Randomized Warp Logo + RAILSYNC Kinetic Display Title */}
-            <div className="flex items-center gap-4 sm:gap-6 flex-wrap pt-1">
+            {/* Brand Title Row: Randomized Warp Logo + RAILSYNC Stereoscopic Offset Display Title */}
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap pt-2">
               <RandomLogoArrival />
               <div className="flex flex-col">
-                <KineticHeadline
+                <StereoscopicTitle
                   text="RAILSYNC"
-                  highlightWord="RAILSYNC"
-                  className="text-5xl sm:text-7xl lg:text-8xl font-black text-amber-500 dark:text-station-yellow tracking-tighter drop-shadow-[0_12px_32px_rgba(255,210,0,0.55)] leading-none"
+                  className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-none"
                 />
-                <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.22em] text-slate-500 dark:text-zinc-400 uppercase pt-2 flex items-center gap-2">
+                <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.24em] text-slate-500 dark:text-zinc-400 uppercase pt-3 flex items-center gap-2">
                   <span>INDIAN RAILWAYS TELEMETRY & PRS</span>
                   <span className="text-amber-500">•</span>
                   <span className="text-emerald-500 font-extrabold flex items-center gap-1">
