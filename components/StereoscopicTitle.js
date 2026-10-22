@@ -5,81 +5,92 @@ import gsap from 'gsap';
 
 /**
  * StereoscopicTitle
- * Recreates the exact high-fashion editorial dual-offset typography effect:
- * - Razor-sharp pure white (#FFFFFF) serif foreground text.
- * - Deep offset vivid violet/purple (#A855F7) shadow layer with neon bloom.
- * - Interactive pointer parallax using gsap.quickTo.
- * - Kinetic split-letter rotational bounce and elastic snap-back on hover.
+ * Implements the exact Poiesis-inspired offset typography & kinetic pop interaction:
+ * - Font: "Abril Fatface", Georgia, serif (matching poiesis-2026.vercel.app).
+ * - Exact overprint shadow styling: #b84dff at top: 7px, left: -7px with neon text-shadow.
+ * - Exact entrance animation: yPercent: 115, rotate: 7deg, stagger: 0.055s, ease: 'power3.out'.
+ * - Kinetic pop interaction on hover: spring lift, rotational jitter, and elastic recovery.
+ * - Interactive pointer parallax on the offset overprint layer.
  */
 export default function StereoscopicTitle({
   text = 'RAILSYNC',
   className = '',
-  shadowColor = '#A855F7',
-  glowColor = 'rgba(168, 85, 247, 0.7)',
+  shadowColor = '#b84dff',
+  glowColor = 'rgba(184, 77, 255, 0.55)',
 }) {
   const containerRef = useRef(null);
-  const shadowLayersRef = useRef([]);
+  const overprintRef = useRef(null);
+  const lettersRef = useRef([]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // 1. Entrance Stagger Animation on Mount
-    const letters = container.querySelectorAll('.stereo-letter-box');
-    gsap.fromTo(
-      letters,
-      {
-        y: -50,
-        opacity: 0,
-        scale: 0.8,
-        rotation: () => gsap.utils.random(-15, 15),
-      },
-      {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        rotation: 0,
-        stagger: 0.045,
-        duration: 0.85,
-        ease: 'back.out(2)',
-      }
-    );
+    const letters = lettersRef.current.filter(Boolean);
+    const overprint = overprintRef.current;
 
-    // 2. Parallax Pointer Movement for the Purple Offset Shadow Layer
+    // 1. Entrance animation identical to poiesis GSAP timeline
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    if (overprint) {
+      tl.fromTo(
+        overprint,
+        { autoAlpha: 0, yPercent: 115, rotate: 4 },
+        { autoAlpha: 0.95, yPercent: 0, rotate: 0, duration: 0.8 },
+        0
+      );
+    }
+
+    if (letters.length > 0) {
+      tl.fromTo(
+        letters,
+        {
+          autoAlpha: 0,
+          yPercent: 115,
+          rotate: 7,
+          scale: 0.9,
+        },
+        {
+          autoAlpha: 1,
+          yPercent: 0,
+          rotate: 0,
+          scale: 1,
+          stagger: 0.055,
+          duration: 0.75,
+          transformOrigin: '50% 100%',
+        },
+        0.05
+      );
+    }
+
+    // 2. Parallax Pointer Movement for the Overprint Shadow Layer
     const handleMouseMove = (e) => {
+      if (!overprint) return;
       const rect = container.getBoundingClientRect();
       const relX = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 ... +0.5
       const relY = (e.clientY - rect.top) / rect.height - 0.5;
 
-      // Base offset: -7px X, +8px Y matching reference image
-      const targetX = -7 + relX * 10;
-      const targetY = 8 + relY * 8;
+      // Base offset: -7px X, +7px Y matching Poiesis
+      const targetX = -7 + relX * 8;
+      const targetY = 7 + relY * 6;
 
-      shadowLayersRef.current.forEach((layer) => {
-        if (layer) {
-          gsap.to(layer, {
-            x: targetX,
-            y: targetY,
-            duration: 0.3,
-            ease: 'power2.out',
-            overwrite: 'auto',
-          });
-        }
+      gsap.to(overprint, {
+        x: targetX + 7, // offset relative to base left: -7px
+        y: targetY - 7, // offset relative to base top: 7px
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto',
       });
     };
 
     const handleMouseLeave = () => {
-      // Return to resting offset
-      shadowLayersRef.current.forEach((layer) => {
-        if (layer) {
-          gsap.to(layer, {
-            x: -7,
-            y: 8,
-            duration: 0.6,
-            ease: 'elastic.out(1.1, 0.4)',
-            overwrite: 'auto',
-          });
-        }
+      if (!overprint) return;
+      gsap.to(overprint, {
+        x: 0,
+        y: 0,
+        duration: 0.6,
+        ease: 'elastic.out(1.1, 0.4)',
+        overwrite: 'auto',
       });
     };
 
@@ -89,36 +100,49 @@ export default function StereoscopicTitle({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       if (container) container.removeEventListener('mouseleave', handleMouseLeave);
+      tl.kill();
     };
-  }, []);
+  }, [text]);
 
-  const handleLetterHover = (e) => {
-    const box = e.currentTarget;
-    if (!box || box.dataset.animating === 'true') return;
-    box.dataset.animating = 'true';
+  // Kinetic "Pop" on individual letter hover
+  const handleLetterHover = (idx) => {
+    const el = lettersRef.current[idx];
+    if (!el || el.dataset.animating === 'true') return;
+    el.dataset.animating = 'true';
 
-    const randomRot = gsap.utils.random(-14, 14);
-    const randomY = gsap.utils.random(-12, -20);
+    const randomRot = gsap.utils.random(-9, 9);
+    const randomScale = gsap.utils.random(1.12, 1.2);
 
-    gsap.to(box, {
-      y: randomY,
-      rotation: randomRot,
-      scale: 1.15,
-      duration: 0.18,
+    gsap.to(el, {
+      yPercent: -20,
+      scale: randomScale,
+      rotate: randomRot,
+      duration: 0.16,
       ease: 'power2.out',
       onComplete: () => {
-        gsap.to(box, {
-          y: 0,
-          rotation: 0,
+        gsap.to(el, {
+          yPercent: 0,
           scale: 1,
-          duration: 0.7,
-          ease: 'elastic.out(1.2, 0.35)',
+          rotate: 0,
+          duration: 0.65,
+          ease: 'elastic.out(1.25, 0.35)',
           onComplete: () => {
-            box.dataset.animating = 'false';
+            el.dataset.animating = 'false';
           },
         });
       },
     });
+
+    // Also pulse the shadow overprint for tactile feedback
+    if (overprintRef.current) {
+      gsap.to(overprintRef.current, {
+        textShadow: `0 0 35px rgba(184, 77, 255, 0.9), 0 0 15px #b84dff`,
+        duration: 0.15,
+        yoyo: true,
+        repeat: 1,
+        ease: 'power1.out',
+      });
+    }
   };
 
   const chars = text.split('');
@@ -126,44 +150,68 @@ export default function StereoscopicTitle({
   return (
     <div
       ref={containerRef}
-      className={`relative inline-flex items-center tracking-tight select-none ${className}`}
-      aria-label={text}
+      className={`relative inline-block select-none ${className}`}
       style={{
-        fontFamily: "'Playfair Display', 'Cinzel', Georgia, serif",
+        isolation: 'isolate',
+        width: 'fit-content',
+        maxWidth: '100%',
+        fontFamily: "'Abril Fatface', 'Playfair Display', Georgia, serif",
+        letterSpacing: '0.015em',
+        lineHeight: 0.85,
       }}
+      aria-label={text}
     >
-      {chars.map((char, idx) => (
-        <span
-          key={idx}
-          onMouseEnter={handleLetterHover}
-          className="stereo-letter-box relative inline-block cursor-default will-change-transform mr-[0.02em] last:mr-0"
-        >
-          {/* Layer 1: Vivid Offset Purple Shadow Layer (Matching Reference Image) */}
+      {/* OVERPRINT SHADOW LAYER (Behind, matching Poiesis _heroOverprint) */}
+      <span
+        ref={overprintRef}
+        aria-hidden="true"
+        className="absolute pointer-events-none select-none font-normal"
+        style={{
+          zIndex: 0,
+          top: '7px',
+          left: '-7px',
+          color: shadowColor,
+          opacity: 0.93,
+          textShadow: `0 0 24px ${glowColor}`,
+          whiteSpace: 'nowrap',
+          lineHeight: 'inherit',
+          letterSpacing: 'inherit',
+          fontFamily: 'inherit',
+          willChange: 'transform, opacity, text-shadow',
+        }}
+      >
+        {text}
+      </span>
+
+      {/* FOREGROUND LAYER WITH SPLIT-LETTER KINETIC POP (Matching Poiesis _heroTitle & _heroLetter) */}
+      <h1
+        className="relative z-10 m-0 font-normal text-white flex items-center"
+        style={{
+          color: '#ffffff',
+          whiteSpace: 'nowrap',
+          lineHeight: 'inherit',
+          letterSpacing: 'inherit',
+          fontFamily: 'inherit',
+          textShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
+        }}
+        aria-label={text}
+      >
+        {chars.map((char, idx) => (
           <span
-            ref={(el) => (shadowLayersRef.current[idx] = el)}
-            className="absolute inset-0 select-none pointer-events-none font-black text-[#A855F7] dark:text-[#A855F7]"
+            key={`${char}-${idx}`}
+            ref={(el) => (lettersRef.current[idx] = el)}
+            onMouseEnter={() => handleLetterHover(idx)}
+            className="inline-block cursor-default will-change-transform"
             style={{
-              transform: 'translate(-7px, 8px)',
-              filter: `drop-shadow(0 0 20px ${glowColor}) drop-shadow(0 4px 12px rgba(168, 85, 247, 0.85))`,
-              zIndex: 1,
-              willChange: 'transform',
+              transformOrigin: '50% 100%',
+              display: 'inline-block',
             }}
             aria-hidden="true"
           >
             {char}
           </span>
-
-          {/* Layer 2: Razor-Sharp Pure White Foreground Letter */}
-          <span
-            className="relative z-10 font-black text-white dark:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-            style={{
-              willChange: 'transform',
-            }}
-          >
-            {char}
-          </span>
-        </span>
-      ))}
+        ))}
+      </h1>
     </div>
   );
 }
