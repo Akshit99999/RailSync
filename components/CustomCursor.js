@@ -78,32 +78,35 @@ export default function CustomCursor() {
         }
       }
 
-      // 3. Interactive element (button, link, role=button)
-      const interactiveEl = target && target.closest('button, a, [role="button"], select, .cursor-pointer');
-      if (interactiveEl) {
+      // 3. Interactive Magnetic Element ([data-magnetic], button, a, role=button)
+      const magneticEl = target && target.closest('[data-magnetic], button, a, [role="button"], select, .cursor-pointer');
+      if (magneticEl) {
         setCursorText('');
-        const rect = interactiveEl.getBoundingClientRect();
+        const rect = magneticEl.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
-        // Subtle magnetic pull toward element center
-        const magnetX = x + (centerX - x) * 0.28;
-        const magnetY = y + (centerY - y) * 0.28;
+        const isTrueMagnetic = magneticEl.hasAttribute('data-magnetic');
+        const pullFactor = isTrueMagnetic ? 0.38 : 0.25;
+
+        // Gravitate trailing ring toward center
+        const magnetX = x + (centerX - x) * pullFactor;
+        const magnetY = y + (centerY - y) * pullFactor;
 
         quickX(magnetX);
         quickY(magnetY);
 
         gsap.to(ring, {
-          width: 48,
-          height: 48,
+          width: isTrueMagnetic ? 54 : 46,
+          height: isTrueMagnetic ? 54 : 46,
           borderRadius: '50%',
           opacity: 1,
-          backgroundColor: 'rgba(255, 210, 0, 0.2)',
+          backgroundColor: 'rgba(255, 210, 0, 0.22)',
           borderColor: '#FFD200',
-          duration: 0.25,
+          duration: 0.24,
           overwrite: 'auto',
         });
-        gsap.to(dot, { scale: 1.4, opacity: 1, duration: 0.2 });
+        gsap.to(dot, { scale: 1.5, opacity: 1, duration: 0.2 });
         return;
       }
 
@@ -151,14 +154,25 @@ export default function CustomCursor() {
       }
     };
 
-    // Pulse on click
+    // Click ripple burst animation
     const onMouseDown = () => {
-      gsap.to(ring, { scale: 0.75, duration: 0.08, overwrite: 'auto' });
-      gsap.to(dot, { scale: 0.5, duration: 0.08, overwrite: 'auto' });
+      gsap.to(ring, { scale: 0.65, duration: 0.08, overwrite: 'auto' });
+      gsap.to(dot, { scale: 0.4, duration: 0.08, overwrite: 'auto' });
     };
 
     const onMouseUp = () => {
-      gsap.to(ring, { scale: 1, duration: 0.2, ease: 'back.out(2)', overwrite: 'auto' });
+      gsap.fromTo(
+        ring,
+        { scale: 0.65 },
+        {
+          scale: 1.35,
+          duration: 0.28,
+          ease: 'power2.out',
+          onComplete: () => {
+            gsap.to(ring, { scale: 1, duration: 0.18, ease: 'power2.inOut' });
+          },
+        }
+      );
       gsap.to(dot, { scale: 1, duration: 0.15, overwrite: 'auto' });
     };
 
