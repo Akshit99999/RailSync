@@ -7,111 +7,159 @@ export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
   const labelRef = useRef(null);
+  const lastPos = useRef({ x: -9999, y: -9999 });
+  const hasMovedOnce = useRef(false);
   const [cursorText, setCursorText] = useState('');
-  const [isTouchDevice, setIsTouchDevice] = useState(true);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    // Disable completely on touch screens via (pointer: fine)
-    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
-    if (!hasFinePointer) {
-      setIsTouchDevice(true);
-      return;
+    // Only disable on pure touch devices with no mouse/pointer
+    if (typeof window !== 'undefined') {
+      const hasCoarseOnly = window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+      if (hasCoarseOnly) {
+        setIsTouchDevice(true);
+        return;
+      }
     }
-    setIsTouchDevice(false);
 
     const dot = dotRef.current;
     const ring = ringRef.current;
     if (!dot || !ring) return;
 
-    // Center elements on origin
-    gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
+    // Center elements on origin and start hidden until first mouse move
+    gsap.set([dot, ring], { xPercent: -50, yPercent: -50, opacity: 0 });
 
     // Smooth trailing ring coordinates using gsap.quickTo
-    const quickX = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power2.out' });
-    const quickY = gsap.quickTo(ring, 'y', { duration: 0.35, ease: 'power2.out' });
+    const quickX = gsap.quickTo(ring, 'x', { duration: 0.3, ease: 'power2.out' });
+    const quickY = gsap.quickTo(ring, 'y', { duration: 0.3, ease: 'power2.out' });
 
-    // Pointer move listener
-    const onMouseMove = (e) => {
-      const { clientX: x, clientY: y } = e;
+    const updateState = (target, x, y) => {
+      // 1. Text input state — shrink and soften so typing is clear
+      const isInput = target && target.closest('input, textarea, [contenteditable="true"]');
+      if (isInput) {
+        setCursorText('');
+        quickX(x);
+        quickY(y);
+        gsap.to(ring, {
+          width: 18,
+          height: 18,
+          borderRadius: '50%',
+          opacity: 0.35,
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(245, 158, 11, 0.6)',
+          duration: 0.2,
+          overwrite: 'auto',
+        });
+        gsap.to(dot, { scale: 0.6, opacity: 0.6, duration: 0.2 });
+        return;
+      }
 
-      // 1. Instant 6px dot positioning
-      gsap.set(dot, { x, y });
-
-      // Check for magnetized interactive element
-      const target = e.target.closest('button, a, [role="button"], [data-cursor]');
-
-      if (target) {
-        const customCursorAttr = target.getAttribute('data-cursor') || target.getAttribute('data-cursor-text');
-        
-        if (customCursorAttr) {
-          // Morph into elongated pill showing contextual text
-          setCursorText(customCursorAttr);
+      // 2. Contextual Pill State (data-cursor)
+      const dataCursorEl = target && target.closest('[data-cursor], [data-cursor-text]');
+      if (dataCursorEl) {
+        const text = dataCursorEl.getAttribute('data-cursor') || dataCursorEl.getAttribute('data-cursor-text');
+        if (text) {
+          setCursorText(text);
           gsap.to(ring, {
             width: 'auto',
             height: '28px',
             borderRadius: '9999px',
-            backgroundColor: 'rgba(255, 210, 0, 0.95)',
-            borderColor: '#FFD200',
-            duration: 0.25,
+            opacity: 1,
+            backgroundColor: '#FFD200',
+            borderColor: '#000000',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+            duration: 0.22,
             overwrite: 'auto',
           });
-          gsap.to(dot, { opacity: 0, duration: 0.15 });
+          gsap.to(dot, { opacity: 0, duration: 0.12 });
           quickX(x);
           quickY(y);
           return;
         }
+      }
 
-        // Magnetize over buttons
-        const rect = target.getBoundingClientRect();
+      // 3. Interactive element (button, link, role=button)
+      const interactiveEl = target && target.closest('button, a, [role="button"], select, .cursor-pointer');
+      if (interactiveEl) {
+        setCursorText('');
+        const rect = interactiveEl.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
-        // Slight magnetic pull towards center
-        const magnetX = x + (centerX - x) * 0.35;
-        const magnetY = y + (centerY - y) * 0.35;
+        // Subtle magnetic pull toward element center
+        const magnetX = x + (centerX - x) * 0.28;
+        const magnetY = y + (centerY - y) * 0.28;
 
         quickX(magnetX);
         quickY(magnetY);
 
-        setCursorText('');
         gsap.to(ring, {
-          width: 52,
-          height: 52,
+          width: 48,
+          height: 48,
           borderRadius: '50%',
-          backgroundColor: 'rgba(255, 210, 0, 0.15)',
+          opacity: 1,
+          backgroundColor: 'rgba(255, 210, 0, 0.2)',
           borderColor: '#FFD200',
-          duration: 0.3,
+          duration: 0.25,
           overwrite: 'auto',
         });
-        gsap.to(dot, { scale: 1.5, opacity: 1, duration: 0.2 });
-      } else {
-        // Normal cursor state: smooth trailing 36px ring
-        setCursorText('');
-        quickX(x);
-        quickY(y);
+        gsap.to(dot, { scale: 1.4, opacity: 1, duration: 0.2 });
+        return;
+      }
 
-        gsap.to(ring, {
-          width: 36,
-          height: 36,
-          borderRadius: '50%',
-          backgroundColor: 'transparent',
-          borderColor: 'rgba(255, 210, 0, 0.75)',
-          duration: 0.3,
-          overwrite: 'auto',
-        });
-        gsap.to(dot, { scale: 1, opacity: 1, duration: 0.2 });
+      // 4. Normal roaming cursor state: smooth 32px halo
+      setCursorText('');
+      quickX(x);
+      quickY(y);
+
+      gsap.to(ring, {
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        opacity: 0.85,
+        backgroundColor: 'rgba(255, 210, 0, 0.05)',
+        borderColor: '#FFD200',
+        duration: 0.25,
+        overwrite: 'auto',
+      });
+      gsap.to(dot, { scale: 1, opacity: 1, duration: 0.2 });
+    };
+
+    // Pointer move listener
+    const onMouseMove = (e) => {
+      const { clientX: x, clientY: y } = e;
+      lastPos.current = { x, y };
+
+      if (!hasMovedOnce.current) {
+        hasMovedOnce.current = true;
+        gsap.to([dot, ring], { opacity: 1, duration: 0.15 });
+      }
+
+      // Instant central dot positioning
+      gsap.set(dot, { x, y });
+
+      const target = e.target;
+      updateState(target, x, y);
+    };
+
+    // Scroll listener: keep cursor state responsive during scrolling
+    const onScroll = () => {
+      if (lastPos.current.x < 0 || lastPos.current.y < 0) return;
+      const elUnderPointer = document.elementFromPoint(lastPos.current.x, lastPos.current.y);
+      if (elUnderPointer) {
+        updateState(elUnderPointer, lastPos.current.x, lastPos.current.y);
       }
     };
 
-    // Pulse on click (mousedown / mouseup)
+    // Pulse on click
     const onMouseDown = () => {
-      gsap.to(ring, { scale: 0.7, duration: 0.1, overwrite: 'auto' });
-      gsap.to(dot, { scale: 0.5, duration: 0.1, overwrite: 'auto' });
+      gsap.to(ring, { scale: 0.75, duration: 0.08, overwrite: 'auto' });
+      gsap.to(dot, { scale: 0.5, duration: 0.08, overwrite: 'auto' });
     };
 
     const onMouseUp = () => {
-      gsap.to(ring, { scale: 1, duration: 0.25, ease: 'back.out(2.5)', overwrite: 'auto' });
-      gsap.to(dot, { scale: 1, duration: 0.2, overwrite: 'auto' });
+      gsap.to(ring, { scale: 1, duration: 0.2, ease: 'back.out(2)', overwrite: 'auto' });
+      gsap.to(dot, { scale: 1, duration: 0.15, overwrite: 'auto' });
     };
 
     const onMouseLeave = () => {
@@ -119,10 +167,13 @@ export default function CustomCursor() {
     };
 
     const onMouseEnter = () => {
-      gsap.to([dot, ring], { opacity: 1, duration: 0.2 });
+      if (hasMovedOnce.current) {
+        gsap.to([dot, ring], { opacity: 1, duration: 0.2 });
+      }
     };
 
     window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
     document.documentElement.addEventListener('mouseleave', onMouseLeave);
@@ -130,6 +181,7 @@ export default function CustomCursor() {
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
       document.documentElement.removeEventListener('mouseleave', onMouseLeave);
@@ -141,23 +193,23 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* 1. Instant 6px Central Dot */}
+      {/* 1. High-Visibility Central Dot with High-Contrast Border */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full bg-station-yellow shadow-[0_0_8px_#FFD200] pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 w-2 h-2 rounded-full bg-amber-500 dark:bg-station-yellow ring-1 ring-black/70 dark:ring-white/80 shadow-[0_0_8px_rgba(255,210,0,0.9)] pointer-events-none z-[9999]"
         style={{ willChange: 'transform' }}
       />
 
-      {/* 2. Smooth Trailing 36px Ring / Contextual Pill */}
+      {/* 2. Smooth Trailing High-Contrast Halo Ring / Contextual Pill */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 w-9 h-9 rounded-full border border-station-yellow/80 pointer-events-none z-[9998] flex items-center justify-center px-2.5 transition-[background-color,border-color]"
+        className="fixed top-0 left-0 w-8 h-8 rounded-full border-2 border-amber-600 dark:border-station-yellow shadow-[0_0_12px_rgba(255,210,0,0.35)] pointer-events-none z-[9998] flex items-center justify-center px-3 transition-[background-color,border-color]"
         style={{ willChange: 'transform, width, height' }}
       >
         {cursorText && (
           <span
             ref={labelRef}
-            className="text-[10px] font-mono font-black text-black tracking-widest uppercase whitespace-nowrap select-none"
+            className="text-[10px] font-mono font-black text-black tracking-widest uppercase whitespace-nowrap select-none drop-shadow-sm"
           >
             {cursorText}
           </span>
