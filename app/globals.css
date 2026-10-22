@@ -85,14 +85,17 @@
   padding: 0;
 }
 
-/* Hide native cursor on mouse/trackpad devices — GSAP CustomCursor takes over */
-@media (pointer: fine) {
-  *, *::before, *::after {
-    cursor: none !important;
-  }
+/* Ensure intuitive, visible cursor feedback throughout the website */
+button, a, [role="button"], input[type="submit"], input[type="button"], select, .cursor-pointer {
+  cursor: pointer;
+}
+
+input[type="text"], input[type="number"], input[type="search"], textarea {
+  cursor: text;
 }
 
 html {
+  scroll-behavior: smooth;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -370,20 +373,27 @@ html, body {
   border-radius: 6px;
 }
 
-/* Custom scrollbars */
+/* High-visibility Indian Railways Railway Track Scrollbars */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-canvas);
+  border-left: 1px solid var(--border-subtle);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-main);
-  border-radius: 3px;
+  background: #cbd5e1;
+  border: 2px solid var(--bg-canvas);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-color: #000000;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--station-yellow-dim);
+  background: var(--station-yellow) !important;
 }
 
 /* Leaflet dark & light custom overrides */
