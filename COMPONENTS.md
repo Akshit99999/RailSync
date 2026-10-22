@@ -30,6 +30,7 @@ This document is the comprehensive engineering manual for **every component, hoo
    - [`components/CustomCursor.js`](#componentscustomcursorjs)
    - [`components/SignalField.js`](#componentssignalfieldjs)
    - [`hooks/useTiltCard.js`](#hooksusetiltcardjs)
+   - [`components/ScrollFeatures.js`](#componentsscrollfeaturesjs)
 5. [Slide-Over Drawers, Modals & Global Shell](#5-slide-over-drawers-modals--global-shell)
    - [`components/Navbar.js`](#componentsnavbarjs)
    - [`components/CartDrawer.js`](#componentscartdrawerjs)
@@ -310,6 +311,20 @@ This document is the comprehensive engineering manual for **every component, hoo
   - Maps $(\text{relX}, \text{relY}) \to (\text{rotateY}, -\text{rotateX})$ within $\pm 10^\circ$.
   - Applies `gsap.quickTo` for dampening and resets rotations to zero on mouse leave.
 - **Returns**: `{ ref, onMouseMove, onMouseLeave }`.
+
+---
+
+### `components/ScrollFeatures.js`
+- **What it does**: Provides real-time railway telemetry scrolling capabilities across the application:
+  1. **Top Railway Track Scroll Progress Line**: Fixed at the very top of the viewport ($3\text{px}$ height) with an animated electric yellow gradient line tracking reading depth.
+  2. **Floating "Scroll to Top" Signal Button**: An interactive station yellow floating action button that fades in once scrolled down past $250\text{px}$, displaying live scroll percentage and triggering smooth animated scroll-to-top on click.
+- **How it does it**:
+  - Attaches a passive `scroll` listener to `window`.
+  - Calculates dynamic scroll progress:
+    $$\text{Progress} = \frac{\text{window.scrollY}}{\text{scrollHeight} - \text{clientHeight}} \times 100$$
+  - Tags the floating button with `data-cursor="TOP"` so the cursor follower morphs into a contextual pill.
+- **What functions it calls**:
+  - `window.scrollTo({ top: 0, behavior: 'smooth' })`.
 
 ---
 
