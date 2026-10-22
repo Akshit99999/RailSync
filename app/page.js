@@ -15,6 +15,7 @@ import CartDrawer from '@/components/CartDrawer';
 import EmergencyDrawer from '@/components/EmergencyDrawer';
 import ToastContainer from '@/components/ToastContainer';
 import SignalField from '@/components/SignalField';
+import ScrollFeatures from '@/components/ScrollFeatures';
 import { ChevronRight, Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
@@ -82,6 +83,9 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-black text-slate-900 dark:text-zinc-100 transition-colors duration-200 font-mono relative">
       {/* Background HTML5 Canvas Particle Field */}
       <SignalField />
+
+      {/* Scroll Progress Bar & Floating Scroll-To-Top Button */}
+      <ScrollFeatures />
 
       {/* Navigation Bar */}
       <Navbar
