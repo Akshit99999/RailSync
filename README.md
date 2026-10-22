@@ -20,12 +20,16 @@ Compliant with full-stack **Front-End Engineering (FEE)** and **Relational Datab
 
 ## 🌟 Key Features Overview
 
-### 1. 🌐 Landing Page & Operational Overview (`components/HomePage.js`)
+### 1. 🌐 Landing Page & Art-Directed Operational Hub (`components/HomePage.js`)
+- **Kinetic Split-Letter Display Headline**: Built with GSAP physics (`components/KineticHeadline.js`) where letters split into interactive elements with randomized rotational bounce ($\pm 14^\circ$) and elastic snap-back on hover.
+- **Magnetic Buttons & Dual-Layer Cyber-Cursor**: Primary action buttons physically gravitate toward the pointer (`components/MagneticButton.js`) while the GSAP cursor expands, morphs into contextual pills (`EXPLORE`, `TRACK`, `INSPECT`), and produces click ripple bursts.
+- **Interactive 3D Perspective Card Tilt**: Cards calculate relative bounding rect offsets and tilt dynamically in 3D (`perspective: 1000px`) via `hooks/useTiltCard.js`.
 - **Quick-Track Hero Terminal**: 5-digit train number search with instant audio chime feedback and sample shortcuts for flagship express trains (Tejas Rajdhani `12952`, Vande Bharat `22436`, Bhopal Shatabdi `12002`).
-- **Interactive Quick-Pill Navigation Grid**: Instant 1-click routing to Train Search, Live GPS Tracker, Station Board, PNR Status, Fare Matrix, and Control Desk.
-- **Network Telemetry Statistics**: Real-time stats across 7,300+ stations, 13,000+ daily rakes, 17 railway zones, and 68 divisions.
-- **Operational Capability Cards**: Interactive cards with spring physics hover transformations (`scale(1.035)`, uplift `-8px`) and dual-theme yellow glow.
-- **Indian Railways Operations FAQ**: Answers regarding GPS telemetry, PRS charting, platform conflicts, and coach rake positions.
+- **Operational Capabilities Bento Grid**: High-contrast multi-column grid with live hover lighting, ticket notches, rivets, and signal lamps.
+- **Quota Matrix Value Grid**: Bento breakdown comparing General Quota (GN), Tatkal Emergency (CK), Premium Tatkal (PT), and Senior/Ladies Concession (SS).
+- **Stepped Corridor Process Timeline**: Visual stepped cards tracing the GPS telemetry pipeline from RTIS locomotive handshake to terminal platform allocation.
+- **Express Multi-Step Booking Wizard (`components/BookingWizard.js`)**: Interactive 3-step conversion wizard with live step indicators, mobile input hints (`inputMode`), and security PIN / password visibility toggles.
+- **Accessible Fluid-Height Accordion FAQ (`components/AccordionFAQ.js`)**: CSS Grid `grid-template-rows: 0fr -> 1fr` smooth expansion with rotating status glyphs.
 
 ### 2. 🛰️ Live GPS Telemetry & GIS Route Corridor (`components/LiveTracker.js` & `TrackMap.js`)
 - **Leaflet GIS Map**: Renders full railway corridor track polylines with CSS filter inversion for dark-mode mapping without paid map API keys.
