@@ -10,6 +10,7 @@ Compliant with full-stack **Front-End Engineering (FEE)** and **Relational Datab
 
 | Guide | Description | Target Link |
 |---|---|---|
+| **System Flow & Workflows** | Master end-to-end operational flow: boot lifecycle, 8 feature workflows, motion physics, audio synthesis, and resilience decision trees. | [`FLOW.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/FLOW.md) |
 | **System Architecture** | Multi-tier topology, layer breakdown, sequence diagrams, data flow pipelines, and DBMS 3NF schema. | [`ARCHITECTURE.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/ARCHITECTURE.md) |
 | **Architecture Decisions** | 10 formal Architecture Decision Records (ADRs) explaining technical trade-offs and rationale. | [`DECISIONS.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/DECISIONS.md) |
 | **Component Reference** | Deep dive into every component, hook, store, and utility: what it does, how it works, functions called, and terminology glossary. | [`COMPONENTS.md`](file:///Users/akshit/Desktop/coding/fee%20and%20dbms%20project/COMPONENTS.md) |
