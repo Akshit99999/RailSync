@@ -7,7 +7,8 @@ import gsap from 'gsap';
  * StereoscopicTitle
  * Implements the exact Poiesis-inspired offset typography & kinetic pop interaction:
  * - Font: "Abril Fatface", Georgia, serif (matching poiesis-2026.vercel.app).
- * - Exact overprint shadow styling: #b84dff at top: 7px, left: -7px with neon text-shadow.
+ * - Exact overprint shadow styling: offset at top: 7px, left: -7px with neon text-shadow.
+ * - Dual-Theme Support: High-contrast ink slate (#0f172a) in Light Mode, crisp pure white (#ffffff) in Dark Mode.
  * - Exact entrance animation: yPercent: 115, rotate: 7deg, stagger: 0.055s, ease: 'power3.out'.
  * - Kinetic pop interaction on hover: spring lift, rotational jitter, and elastic recovery.
  * - Interactive pointer parallax on the offset overprint layer.
@@ -136,7 +137,7 @@ export default function StereoscopicTitle({
     // Also pulse the shadow overprint for tactile feedback
     if (overprintRef.current) {
       gsap.to(overprintRef.current, {
-        textShadow: `0 0 35px rgba(184, 77, 255, 0.9), 0 0 15px #b84dff`,
+        opacity: 1,
         duration: 0.15,
         yoyo: true,
         repeat: 1,
@@ -161,38 +162,34 @@ export default function StereoscopicTitle({
       }}
       aria-label={text}
     >
-      {/* OVERPRINT SHADOW LAYER (Behind, matching Poiesis _heroOverprint) */}
+      {/* OVERPRINT SHADOW LAYER (Behind, matching Poiesis _heroOverprint with dual-theme color) */}
       <span
         ref={overprintRef}
         aria-hidden="true"
-        className="absolute pointer-events-none select-none font-normal"
+        className="absolute pointer-events-none select-none font-normal text-purple-600 dark:text-[#b84dff] opacity-90 dark:opacity-95"
         style={{
           zIndex: 0,
           top: '7px',
           left: '-7px',
-          color: shadowColor,
-          opacity: 0.93,
-          textShadow: `0 0 24px ${glowColor}`,
+          filter: 'drop-shadow(0 0 16px rgba(184, 77, 255, 0.45))',
           whiteSpace: 'nowrap',
           lineHeight: 'inherit',
           letterSpacing: 'inherit',
           fontFamily: 'inherit',
-          willChange: 'transform, opacity, text-shadow',
+          willChange: 'transform, opacity, filter',
         }}
       >
         {text}
       </span>
 
-      {/* FOREGROUND LAYER WITH SPLIT-LETTER KINETIC POP (Matching Poiesis _heroTitle & _heroLetter) */}
+      {/* FOREGROUND LAYER WITH SPLIT-LETTER KINETIC POP (Dual-theme: Slate-900 in Light, Pure White in Dark) */}
       <h1
-        className="relative z-10 m-0 font-normal text-white flex items-center"
+        className="relative z-10 m-0 font-normal text-slate-900 dark:text-white flex items-center drop-shadow-sm dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
         style={{
-          color: '#ffffff',
           whiteSpace: 'nowrap',
           lineHeight: 'inherit',
           letterSpacing: 'inherit',
           fontFamily: 'inherit',
-          textShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
         }}
         aria-label={text}
       >
