@@ -28,6 +28,9 @@ export function AppProvider({ children }) {
   // Saved PNRs - persisted in localStorage
   const [savedPnrs, setSavedPnrs] = useState([]);
 
+  // Active PNR lookup state (for deep-linking from Saved PNRs drawer & cards)
+  const [activePnrQuery, setActivePnrQuery] = useState('');
+
   // Recent searches - persisted in localStorage
   const [recentSearches, setRecentSearches] = useState([]);
 
@@ -223,6 +226,8 @@ export function AppProvider({ children }) {
         savedPnrs,
         savePnr,
         removePnr,
+        activePnrQuery,
+        setActivePnrQuery,
         // Searches
         recentSearches,
         recordRecentSearch,
