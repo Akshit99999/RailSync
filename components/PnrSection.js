@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ticket, Search, AlertCircle, CheckCircle2, User, Calendar, MapPin, Train, Loader2, Printer, Star } from 'lucide-react';
 import CoachLayout from './CoachLayout';
 import BerthMap from './BerthMap';
@@ -7,18 +7,15 @@ import { playRailwayChime } from '@/lib/audio-chime';
 import { useApp } from '@/context/AppContext';
 
 export default function PnrSection() {
-  const { savePnr, savedPnrs, removePnr, addToast } = useApp();
+  const { savePnr, savedPnrs, removePnr, addToast, activePnrQuery, setActivePnrQuery } = useApp();
   const [pnrInput, setPnrInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pnrData, setPnrData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [showDigitalPass, setShowDigitalPass] = useState(false);
 
-  const handlePnrSubmit = async (e) => {
-    if (e) e.preventDefault();
-    const cleanPnr = pnrInput.replace(/\D/g, '').trim();
-
-    if (cleanPnr.length !== 10) {
+  const fetchPnrStatus = async (cleanPnr) => {
+    if (!cleanPnr || cleanPnr.length !== 10) {
       setErrorMessage('Please enter a valid 10-digit PNR number found on top-left of your Indian Railways ticket.');
       return;
     }
@@ -43,6 +40,20 @@ export default function PnrSection() {
       setIsLoading(false);
     }
   };
+
+  const handlePnrSubmit = async (e) => {
+    if (e) e.preventDefault();
+    const cleanPnr = pnrInput.replace(/\D/g, '').trim();
+    fetchPnrStatus(cleanPnr);
+  };
+
+  // Auto-fetch if activePnrQuery is provided via saved deep-link
+  useEffect(() => {
+    if (activePnrQuery && activePnrQuery.length === 10) {
+      setPnrInput(activePnrQuery);
+      fetchPnrStatus(activePnrQuery);
+    }
+  }, [activePnrQuery]);
 
   const handleTestPnr = () => {
     setPnrInput('2458910243');
@@ -108,6 +119,45 @@ export default function PnrSection() {
           </div>
         </form>
 
+        {/* Quick Access Strip: Saved PNRs */}
+        {savedPnrs.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <Star size={13} className="text-amber-500 fill-amber-500" />
+                <span>SAVED JOURNEY PNRs ({savedPnrs.length})</span>
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-zinc-400">Click to fetch status</span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+              {savedPnrs.map((p) => (
+                <button
+                  key={p.pnrNumber}
+                  type="button"
+                  onClick={() => {
+                    setPnrInput(p.pnrNumber);
+                    fetchPnrStatus(p.pnrNumber);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold flex items-center gap-2 whitespace-nowrap transition-all shadow-sm ${
+                    pnrData?.pnr === p.pnrNumber
+                      ? 'border-amber-500 bg-amber-500/15 text-amber-900 dark:text-station-yellow ring-1 ring-amber-500'
+                      : 'border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 hover:border-amber-400'
+                  }`}
+                  title={`View chart for PNR #${p.pnrNumber}`}
+                >
+                  <span className="text-amber-700 dark:text-station-yellow font-black">#{p.pnrNumber}</span>
+                  <span className="text-slate-400 font-normal">|</span>
+                  <span className="truncate max-w-[120px] font-medium">{p.trainName || p.trainNumber}</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold">
+                    {p.chartStatus || 'CHART'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Error Notification */}
         {errorMessage && (
           <div className="mt-4 p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-md text-rose-800 dark:text-rose-200 text-xs sm:text-sm flex items-start gap-2.5">
@@ -162,8 +212,8 @@ export default function PnrSection() {
                   }}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono font-bold transition-all ${
                     savedPnrs.some(p => p.pnrNumber === pnrData.pnr)
-                      ? 'border-amber-400 bg-amber-500/10 text-station-yellow'
-                      : 'border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 hover:border-station-yellow'
+                      ? 'border-amber-500 bg-amber-500/15 text-amber-800 dark:text-station-yellow font-black'
+                      : 'border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 hover:border-amber-500'
                   }`}
                   title="Bookmark this PNR"
                 >
