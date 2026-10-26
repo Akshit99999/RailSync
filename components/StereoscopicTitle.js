@@ -7,11 +7,10 @@ import gsap from 'gsap';
  * StereoscopicTitle
  * Implements the exact Poiesis-inspired offset typography & kinetic pop interaction:
  * - Font: "Abril Fatface", Georgia, serif (matching poiesis-2026.vercel.app).
- * - Exact overprint shadow styling: offset at top: 7px, left: -7px with neon text-shadow.
+ * - Fixed Overprint Shadow: Positioned firmly at top: 7px, left: -7px without drifting or moving with the pointer.
  * - Dual-Theme Support: High-contrast ink slate (#0f172a) in Light Mode, crisp pure white (#ffffff) in Dark Mode.
  * - Exact entrance animation: yPercent: 115, rotate: 7deg, stagger: 0.055s, ease: 'power3.out'.
- * - Kinetic pop interaction on hover: spring lift, rotational jitter, and elastic recovery.
- * - Interactive pointer parallax on the offset overprint layer.
+ * - Kinetic pop interaction on hover: individual foreground letters spring up and bounce with elastic recovery.
  */
 export default function StereoscopicTitle({
   text = 'RAILSYNC',
@@ -64,48 +63,12 @@ export default function StereoscopicTitle({
       );
     }
 
-    // 2. Parallax Pointer Movement for the Overprint Shadow Layer
-    const handleMouseMove = (e) => {
-      if (!overprint) return;
-      const rect = container.getBoundingClientRect();
-      const relX = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 ... +0.5
-      const relY = (e.clientY - rect.top) / rect.height - 0.5;
-
-      // Base offset: -7px X, +7px Y matching Poiesis
-      const targetX = -7 + relX * 8;
-      const targetY = 7 + relY * 6;
-
-      gsap.to(overprint, {
-        x: targetX + 7, // offset relative to base left: -7px
-        y: targetY - 7, // offset relative to base top: 7px
-        duration: 0.25,
-        ease: 'power2.out',
-        overwrite: 'auto',
-      });
-    };
-
-    const handleMouseLeave = () => {
-      if (!overprint) return;
-      gsap.to(overprint, {
-        x: 0,
-        y: 0,
-        duration: 0.6,
-        ease: 'elastic.out(1.1, 0.4)',
-        overwrite: 'auto',
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseleave', handleMouseLeave);
-
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (container) container.removeEventListener('mouseleave', handleMouseLeave);
       tl.kill();
     };
   }, [text]);
 
-  // Kinetic "Pop" on individual letter hover
+  // Kinetic "Pop" on individual letter hover (only the foreground letter pops; purple text remains completely fixed)
   const handleLetterHover = (idx) => {
     const el = lettersRef.current[idx];
     if (!el || el.dataset.animating === 'true') return;
@@ -133,17 +96,6 @@ export default function StereoscopicTitle({
         });
       },
     });
-
-    // Also pulse the shadow overprint for tactile feedback
-    if (overprintRef.current) {
-      gsap.to(overprintRef.current, {
-        opacity: 1,
-        duration: 0.15,
-        yoyo: true,
-        repeat: 1,
-        ease: 'power1.out',
-      });
-    }
   };
 
   const chars = text.split('');
@@ -162,7 +114,7 @@ export default function StereoscopicTitle({
       }}
       aria-label={text}
     >
-      {/* OVERPRINT SHADOW LAYER (Behind, matching Poiesis _heroOverprint with dual-theme color) */}
+      {/* FIXED OVERPRINT SHADOW LAYER (Anchored firmly at top: 7px, left: -7px - zero pointer drift) */}
       <span
         ref={overprintRef}
         aria-hidden="true"
@@ -176,7 +128,6 @@ export default function StereoscopicTitle({
           lineHeight: 'inherit',
           letterSpacing: 'inherit',
           fontFamily: 'inherit',
-          willChange: 'transform, opacity, filter',
         }}
       >
         {text}
