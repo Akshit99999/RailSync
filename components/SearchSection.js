@@ -333,6 +333,31 @@ export default function SearchSection({ onTrackTrain }) {
             </div>
           </form>
         )}
+
+        {/* Quick-Access Strip: Starred Watchlist Trains */}
+        {watchlist.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-mono scrollbar-thin">
+            <span className="font-bold text-slate-600 dark:text-zinc-400 flex items-center gap-1 shrink-0">
+              <Star size={12} className="text-amber-500 fill-amber-500" />
+              <span>SAVED TRAINS:</span>
+            </span>
+            {watchlist.map((t) => (
+              <button
+                key={t.trainNumber}
+                type="button"
+                onClick={() => {
+                  setSearchMode('number');
+                  setTrainNumberInput(t.trainNumber);
+                }}
+                className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 hover:border-amber-500 font-bold flex items-center gap-1.5 whitespace-nowrap shadow-sm transition-all"
+                title={`Select saved train #${t.trainNumber}`}
+              >
+                <span className="text-amber-700 dark:text-station-yellow font-black">#{t.trainNumber}</span>
+                <span className="truncate max-w-[100px]">{t.trainName}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Train Search Results Board */}
@@ -459,7 +484,7 @@ export default function SearchSection({ onTrackTrain }) {
                       onClick={() => setSelectedClass(c)}
                       className={`py-2 rounded-lg font-bold border transition-colors ${
                         selectedClass === c
-                          ? 'border-station-yellow bg-amber-500/10 text-station-yellow ring-1 ring-station-yellow'
+                          ? 'border-amber-500 bg-amber-500/15 text-amber-900 dark:text-station-yellow ring-1 ring-amber-500 font-black'
                           : 'border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
                       }`}
                     >
