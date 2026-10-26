@@ -23,7 +23,6 @@ import {
   ShoppingBag,
   Calculator,
   Gauge,
-  Code2,
   PhoneCall,
   Star,
   Languages
@@ -107,7 +106,6 @@ export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onT
     { id: 'pnr', label: 'PNR Status', icon: Ticket },
     { id: 'fare-calculator', label: 'Fare Matrix', icon: Calculator },
     { id: 'dashboard', label: 'Control Desk', icon: Gauge },
-    { id: 'portfolio', label: 'PE-I Portfolio', icon: Code2 },
   ];
 
   return (
