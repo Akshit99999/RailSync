@@ -218,3 +218,25 @@ Implement mathematical **modulo arithmetic** in [`components/BerthMap.js`](file:
 #### Consequences & Benefits
 - Compact, clean, 100% bug-free seat resolution for any berth number from 1 to 80.
 - Enables visual rendering of cutaway compartment schematics with highlighting of the passenger's exact seat.
+
+---
+
+### ADR-011: Dual-Theme Contrast Engineering & Saved Deep-Link Orchestration
+
+#### Context
+1. In Light Mode, neon-yellow text on white backgrounds suffered from low contrast, and the hero title was initially rendered with a hardcoded white foreground.
+2. In the Saved Watchlist drawer, clicking a saved PNR merely navigated to the PNR route without passing the 10-digit number, forcing the user to manually retype it.
+
+#### Decision
+1. **Adaptive Dual-Theme Tokens**:
+   - `StereoscopicTitle`: Slate-900 foreground with purple overprint shadow in Light Mode; pure white foreground with neon bloom in Dark Mode.
+   - Text colors: Shifted from raw `text-station-yellow` to accessible `text-amber-800 dark:text-station-yellow` across light backgrounds.
+   - `SignalField`: Canvas node and connective laser colors dynamically adjust between `#FFD200` in Dark Mode and `#d97706` in Light Mode.
+2. **Deep-Link State via `activePnrQuery`**:
+   - Added `activePnrQuery` to `AppContext`.
+   - Selecting a saved PNR sets `activePnrQuery`, transitions the SPA to `pnr`, and triggers automated status fetching inside `PnrSection`.
+   - Mounted quick-access saved chips across `LiveTracker`, `SearchSection`, and `PnrSection` for single-tap switching.
+
+#### Consequences & Benefits
+- Full WCAG AAA compliant text contrast in both light and dark themes.
+- Seamless single-click workflow from saved bookmarks directly to live verified PRS charts.
