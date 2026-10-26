@@ -159,6 +159,37 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
               </span>
             )}
           </div>
+
+          {/* Quick-Access Strip: Starred Watchlist Trains */}
+          {watchlist.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto pb-1 text-xs font-mono scrollbar-thin">
+              <span className="font-bold text-slate-600 dark:text-zinc-400 flex items-center gap-1 shrink-0">
+                <Star size={12} className="text-amber-500 fill-amber-500" />
+                <span>SAVED:</span>
+              </span>
+              {watchlist.map((t) => (
+                <button
+                  key={t.trainNumber}
+                  type="button"
+                  onClick={() => {
+                    setTrainNumber(t.trainNumber);
+                    fetchLiveTracking(t.trainNumber, dateSelection);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg border text-xs font-mono font-bold flex items-center gap-1.5 whitespace-nowrap transition-all shadow-sm ${
+                    trainNumber === t.trainNumber
+                      ? 'border-amber-500 bg-amber-500/15 text-amber-900 dark:text-station-yellow ring-1 ring-amber-500'
+                      : 'border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 hover:border-amber-400'
+                  }`}
+                  title={`Track ${t.trainName || t.trainNumber}`}
+                >
+                  <span className="text-amber-700 dark:text-station-yellow font-black">#{t.trainNumber}</span>
+                  {t.origin && t.destination && (
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-400">({t.origin}➔{t.destination})</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </form>
       </div>
 
@@ -209,12 +240,12 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
                 onClick={() => inWatchlist ? removeFromWatchlist(trainData.trainNumber) : addToWatchlist(trainData)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-mono font-bold transition-colors ${
                   inWatchlist
-                    ? 'border-amber-400 bg-amber-500/10 text-station-yellow'
-                    : 'border-slate-300 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-station-yellow'
+                    ? 'border-amber-500 bg-amber-500/15 text-amber-800 dark:text-station-yellow font-black'
+                    : 'border-slate-300 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-amber-500'
                 }`}
                 title={inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
               >
-                <Star size={13} fill={inWatchlist ? 'currentColor' : 'none'} />
+                <Star size={13} fill={inWatchlist ? 'currentColor' : 'none'} className={inWatchlist ? 'text-amber-500' : ''} />
                 <span className="hidden sm:inline">{inWatchlist ? 'WATCHLISTED' : 'WATCHLIST'}</span>
               </button>
 
