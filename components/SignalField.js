@@ -106,16 +106,20 @@ export default function SignalField() {
         }
 
         // Draw particle node
+        const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 210, 0, ${p.baseAlpha})`;
-        ctx.shadowColor = '#FFD200';
+        ctx.fillStyle = isDark
+          ? `rgba(255, 210, 0, ${p.baseAlpha})`
+          : `rgba(217, 119, 6, ${p.baseAlpha * 0.75})`;
+        ctx.shadowColor = isDark ? '#FFD200' : '#d97706';
         ctx.shadowBlur = 6;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
 
       // 2. Draw glowing connective lines between nodes within 130px
+      const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i];
@@ -130,7 +134,9 @@ export default function SignalField() {
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(255, 210, 0, ${alpha})`;
+            ctx.strokeStyle = isDark
+              ? `rgba(255, 210, 0, ${alpha})`
+              : `rgba(217, 119, 6, ${alpha * 0.55})`;
             ctx.lineWidth = 0.85;
             ctx.stroke();
           }
