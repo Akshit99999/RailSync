@@ -17,6 +17,7 @@ This document is the master operational flow manual for **RailSync**. It maps ev
 9. [Feature Workflow 7: Watchlist & Saved PNR Management](#9-feature-workflow-7-watchlist--saved-pnr-management)
 10. [Feature Workflow 8: RailMadad 139 Emergency Helpline Desk](#10-feature-workflow-8-railmadad-139-emergency-helpline-desk)
 11. [Interactive Motion, Canvas & Physics Flows](#11-interactive-motion-canvas--physics-flows)
+    - [Kinetic Stereoscopic Headline & Warp Arrival Flow](#kinetic-stereoscopic-headline--warp-arrival-flow)
     - [Custom Cursor & Magnetic Follower Flow](#custom-cursor--magnetic-follower-flow)
     - [3D Perspective Card Tilt Flow](#3d-perspective-card-tilt-flow)
     - [SignalField HTML5 Canvas Particle Flow](#signalfield-html5-canvas-particle-flow)
@@ -229,18 +230,25 @@ flowchart TD
 
 ## 9. Feature Workflow 7: Watchlist & Saved PNR Management
 
-Cross-view persistence of pinned trains and ticket reservations via React Context API.
+Cross-view persistence of pinned trains and ticket reservations via React Context API with deep-linked chart lookups and instant clipboard sharing.
 
 ```mermaid
 flowchart TD
     A["User clicks Star Icon on Train #12952 (LiveTracker / Navbar / Search)"] --> B["useApp().addToWatchlist(trainObject)"]
-    B --> C["AppContext updates watchlist state array"]
+    B --> C["AppContext updates watchlist state array in localStorage"]
     C --> D["Add Toast Notification: 'Train #12952 added to your watchlist'"]
     C --> E["Navbar Watchlist Pill badge count updates dynamically"]
-    E --> F["User clicks 'Watchlist' button in Navbar"]
-    F --> G["Open WatchlistDrawer slide-over"]
-    G --> H["User clicks any pinned train --> Instantly launches Live GPS Tracker"]
-    G --> I["User clicks saved PNR --> Instantly re-verifies reservation chart"]
+    E --> F["User clicks 'SAVED' button in Navbar"]
+    F --> G["Open WatchlistDrawer slide-over with dual tabs (Trains / PNRs)"]
+    G --> H["User filters items via in-drawer real-time search"]
+    G --> I["User clicks 'Copy' button --> Copies number to clipboard with feedback toast"]
+    G --> J["User clicks 'Track Live' --> Instantly launches Live GPS Telemetry"]
+    G --> K["User clicks 'View Chart' on saved PNR"]
+    K --> L["AppContext.setActivePnrQuery(pnrNumber)"]
+    L --> M["Navigate to PNR Tab & close drawer"]
+    M --> N["PnrSection detects activePnrQuery --> Automatically triggers /api/pnr query"]
+    N --> O["Display live PRS chart, coach rake visualizer, and 8-berth cutaway"]
+    C --> P["Quick-Access Chips rendered on LiveTracker, Search, and PNR pages for 1-tap switching"]
 ```
 
 ---
@@ -264,6 +272,20 @@ flowchart TD
 ---
 
 ## 11. Interactive Motion, Canvas & Physics Flows
+
+### Kinetic Stereoscopic Headline & Warp Arrival Flow
+```mermaid
+flowchart TD
+    A["Hero Section Mounts"] --> B["RandomLogoArrival computes random trajectory from off-screen"]
+    B --> C["Logo warps into position with elastic bounce: gsap.to(logo, { x:0, y:0, ease: 'back.out(2.2)' })"]
+    C --> D["Locomotive logo triggers neon shockwave pulse"]
+    A --> E["StereoscopicTitle initializes dual-layer Abril Fatface wordmark"]
+    E --> F["Check color mode: Slate-900 in Light Mode, Pure White in Dark Mode"]
+    E --> G["GSAP Staggered Entrance: yPercent: 115, rotate: 7deg, ease: 'power3.out'"]
+    H["User hovers over individual letter"] --> I["Letter springs up: yPercent: -20, scale: 1.15-1.2, jitter rotation"]
+    I --> J["Elastic snap-back: gsap.to(letter, { yPercent: 0, scale: 1, ease: 'elastic.out(1.25, 0.35)' })"]
+    K["Pointer moves across hero banner"] --> L["Overprint purple shadow tracks cursor via 2.5D parallax offset"]
+```
 
 ### Custom Cursor & Magnetic Follower Flow
 ```mermaid
