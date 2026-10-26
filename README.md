@@ -102,7 +102,14 @@ Compliant with full-stack **Front-End Engineering (FEE)** and **Relational Datab
   - Medical Emergency onboard train
 
 ### 11. ⭐ Saved Watchlist & PNR Tracker (`components/WatchlistDrawer.js`)
-- Slide-over drawer accessible from Navbar displaying starred trains and saved PNR reservations with direct 1-click tracking.
+- Slide-over drawer accessible from Navbar displaying starred trains and saved PNR reservations with 1-click deep-link chart verification, in-drawer search filter, clipboard copy, and premier train presets.
+- Persistent cross-session synchronization via `localStorage` and `AppContext`.
+- Quick-access interactive chips mounted across `PnrSection`, `LiveTracker`, and `SearchSection`.
+
+### 12. ⚡ Kinetic Stereoscopic Title & Warp Arrival (`components/StereoscopicTitle.js`, `components/RandomLogoArrival.js`)
+- Dual-layer editorial typography utilizing `Abril Fatface` with offset overprint shadow and neon bloom.
+- GSAP spring physics pop on hover, interactive pointer parallax, and randomized trajectory warp arrival for the locomotive brandmark.
+- Dual-theme tuned for high-contrast accessibility (deep ink slate in light mode, pure crisp white in dark mode).
 
 ---
 
@@ -117,7 +124,7 @@ This project maps directly against the standard computer science curriculum requ
 | **ES6+ Modern JavaScript** | Promises, `async`/`await`, destructuring, spread/rest operators, arrow functions, ES Modules (ESM). | `lib/audio-chime.js`, `lib/railkit.js`, `lib/db.js` |
 | **DOM Manipulation & Web APIs** | Synthetic events, DOM outside-click listeners via `useRef`, Web Audio API oscillators, Web Speech API speech synthesis. | `lib/audio-chime.js`, `components/forms/StationSelect.js` |
 | **SPA Navigation & Page Structure** | Single Page Application with deep linking, breadcrumbs, `window.history.pushState`, and `popstate` browser back/forward routing. | `app/page.js`, `components/Navbar.js` |
-| **Portfolio Site Mini-Project** | Interactive Architecture Hub & Developer Portfolio view showcasing all PE-I concepts and live code sandbox tabs. | `components/PortfolioShowcase.js` |
+| **Interactive Physics & Kinetic GSAP** | Spring physics kinetic headline, 3D card perspective tilt, dual-layer cursor, and HTML5 particle canvas mesh. | `components/StereoscopicTitle.js`, `components/SignalField.js` |
 | **Context API State Architecture** | Global application state management (theme, language, audio, toast notifications, emergency drawer, watchlist) vs local state. | `context/AppContext.js`, `components/ToastContainer.js` |
 | **Zustand State Management** | Modern lightweight Redux alternative. Implements Shopping Cart mini-project with pricing math, coupon engine, and local storage persistence. | `store/useCartStore.js`, `components/CartDrawer.js` |
 | **Async State Handling** | Standardized asynchronous state modeling (`idle`, `loading`, `success`, `error`) with retry logic and error banners. | `store/useDashboardStore.js`, `components/ControlDashboard.js` |
@@ -186,13 +193,17 @@ RailSync/
 │   ├── FareCalculator.js             # Dynamic Telescopic Fare Matrix & Distance Estimator
 │   ├── HomePage.js                   # Interactive landing page (hero, quick pills, capabilities)
 │   ├── LiveTracker.js                # Live telemetry dashboard (speed, delay, HUD, voice)
+│   ├── MagneticButton.js             # Magnetic attraction pointer physics button wrapper
 │   ├── Navbar.js                     # Nav header, clock, cart badge, saved count, 139 SOS
 │   ├── PlatformCoachVisualizer.js     # Platform coach halting layout & pillar alignment
 │   ├── PnrSection.js                 # PNR inquiry, dot-matrix chart & boarding pass trigger
-│   ├── PortfolioShowcase.js          # PE-I System Architecture & Developer Portfolio Hub
+│   ├── RandomLogoArrival.js          # Randomized trajectory warp arrival for locomotive logo
 │   ├── RouteRibbon.js                # Vertical permanent way track ribbon
+│   ├── ScrollFeatures.js             # Fixed top laser scroll progress bar & scroll-to-top
 │   ├── SearchSection.js              # Dual-mode station & train search with Cart booking
+│   ├── SignalField.js                # Fullscreen dynamic HTML5 canvas particle mesh
 │   ├── StationBoard.js               # Platform split-flap board with voice broadcast
+│   ├── StereoscopicTitle.js          # Kinetic Abril Fatface headline with dual-layer overprint
 │   ├── ThemeProvider.js              # Light/Dark mode context with URL param support
 │   ├── ToastContainer.js             # Floating railway notification toasts
 │   ├── TrackMap.js                   # Leaflet GIS corridor map with train markers
