@@ -25,8 +25,9 @@ This document is the comprehensive engineering manual for **every component, hoo
    - [`components/PlatformCoachVisualizer.js`](#componentsplatformcoachvisualizerjs)
    - [`components/FareCalculator.js`](#componentsfarecalculatorjs)
    - [`components/ControlDashboard.js`](#componentscontroldashboardjs)
-   - [`components/PortfolioShowcase.js`](#componentsportfolioshowcasejs)
 4. [Interactive Motion, Canvas & Physics](#4-interactive-motion-canvas--physics)
+   - [`components/StereoscopicTitle.js`](#componentsstereoscopictitlejs)
+   - [`components/RandomLogoArrival.js`](#componentsrandomlogoarrivaljs)
    - [`components/CustomCursor.js`](#componentscustomcursorjs)
    - [`components/SignalField.js`](#componentssignalfieldjs)
    - [`hooks/useTiltCard.js`](#hooksusetiltcardjs)
@@ -107,7 +108,7 @@ This document is the comprehensive engineering manual for **every component, hoo
 ---
 
 ### `app/page.js`
-- **What it does**: Serves as the primary client-side Single-Page Application (SPA) orchestrator. Handles deep-linked navigation between 8 operational views (`home`, `search`, `live`, `station-board`, `pnr`, `fare-calculator`, `dashboard`, `portfolio`), mounts global slide-over drawers, renders `<SignalField />` background canvas, and tracks the active train number.
+- **What it does**: Serves as the primary client-side Single-Page Application (SPA) orchestrator. Handles deep-linked navigation between 7 operational views (`home`, `search`, `live`, `station-board`, `pnr`, `fare-calculator`, `dashboard`), mounts global slide-over drawers, renders `<SignalField />` background canvas, and tracks the active train number.
 - **How it does it**:
   - Manages `activeTab` and `activeTrainNumber` state.
   - Subscribes to window `popstate` events to sync URL query parameters (`?tab=...&train=...`) with browser back and forward history buttons.
@@ -209,9 +210,11 @@ This document is the comprehensive engineering manual for **every component, hoo
 ---
 
 ### `components/PnrSection.js`
-- **What it does**: IRCTC PRS PNR verification engine. Renders the ticket status with dot-matrix styling, charting status (CHART PREPARED), passenger confirmation details (CNF / RAC / WL), coach/berth numbers, interactive 8-berth schematics, and the digital boarding pass modal.
+- **What it does**: IRCTC PRS PNR verification engine. Renders the ticket status with dot-matrix styling, charting status (CHART PREPARED), passenger confirmation details (CNF / RAC / WL), coach/berth numbers, interactive 8-berth schematics, deep-linked auto-fetch from saved items, saved PNR quick chips, and the digital boarding pass modal.
 - **How it does it**:
-  - Validates 10-digit input using regular expressions and Modulus-11 checksum verification.
+  - Validates 10-digit input using regular expressions.
+  - Automatically loads and executes status lookups when triggered via `activePnrQuery` from `WatchlistDrawer`.
+  - Displays saved PNR quick chips directly beneath the input with live chart status badges for 1-click status checks.
   - Fetches ticket details from `/api/pnr?pnr={pnrNumber}`.
   - Computes confirmation probability gauges for waitlisted tickets.
   - Mounts `<BerthMap>`, `<PlatformCoachVisualizer>`, and `<DigitalTicketModal>`.
@@ -264,12 +267,23 @@ This document is the comprehensive engineering manual for **every component, hoo
 
 ---
 
-### `components/PortfolioShowcase.js`
-- **What it does**: Technical engineering showcase presenting the curriculum mapping of RailSync across 6 academic modules (SPA Routing, Context API, Zustand Shopping Cart, Form Validation, DOM Web APIs, and DBMS Relational Architecture).
+### `components/StereoscopicTitle.js`
+- **What it does**: Dual-layer editorial display headline for "RAILSYNC" built with `Abril Fatface`, featuring offset overprint shadow, neon bloom, GSAP split-letter spring physics, and dual-theme accessibility tuning.
 - **How it does it**:
-  - Houses interactive code sandboxes with syntax-highlighted code snippets for each module.
-  - Features the author bio card (Akshit Sharma, GitHub repository link, email contact).
-  - Displays relational DBMS schema diagrams and 3NF normalization proofs.
+  - Uses an underlying overprint shadow layer positioned at `top: 7px; left: -7px` in saturated purple (`#b84dff` in dark mode, `#7c3aed` in light mode).
+  - Employs a foreground letter layer with `text-slate-900` in light mode and `text-white` in dark mode for maximum contrast.
+  - Animate-in GSAP entrance: `yPercent: 115`, `rotate: 7deg`, `stagger: 0.055s`, `ease: 'power3.out'`.
+  - Letter hover pop interaction: spring lift (`yPercent: -20`, `scale: 1.15-1.2`, randomized rotational jitter) with snappy `elastic.out` dampening.
+  - Pointer parallax on the shadow overprint layer based on relative cursor position within bounds.
+
+---
+
+### `components/RandomLogoArrival.js`
+- **What it does**: Randomized trajectory arrival animation for the locomotive brand logo.
+- **How it does it**:
+  - Computes random off-screen launch coordinates from arbitrary angles upon initial mount.
+  - Warps into the hero container with high velocity and an elastic landing bounce (`back.out(2.2)`).
+  - Emits a luminous neon shockwave ping on impact.
 
 ---
 
@@ -355,11 +369,13 @@ This document is the comprehensive engineering manual for **every component, hoo
 ---
 
 ### `components/WatchlistDrawer.js`
-- **What it does**: Slide-over drawer managing the user's pinned trains and saved PNR numbers.
+- **What it does**: Slide-over drawer managing the user's pinned trains and saved PNR numbers with in-drawer filtering, 1-click deep-link chart lookups, clipboard copying, and flagship train presets.
 - **How it does it**:
-  - Subscribes to `useApp()` (`watchlist` and `savedPnrs`).
-  - Allows one-click switching to live tracking for any pinned train.
-  - Allows instant re-checking of saved PNRs.
+  - Subscribes to `useApp()` (`watchlist`, `savedPnrs`, `addToWatchlist`, `removeFromWatchlist`, `removePnr`, `setActivePnrQuery`).
+  - Provides a real-time search input filtering both saved trains and PNRs.
+  - Clicking "View Chart" or a saved PNR triggers `setActivePnrQuery(pnrNumber)`, switches to the PNR tab, and automatically executes the status lookup.
+  - Allows one-click clipboard copying of train numbers and 10-digit PNRs.
+  - Empty states render quick-add suggestions for premier corridors (Rajdhani, Vande Bharat, Shatabdi) and a demo PNR test runner.
 
 ---
 
