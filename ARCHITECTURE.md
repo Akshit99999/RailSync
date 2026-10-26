@@ -83,6 +83,10 @@ flowchart TD
   - React hook calculating cursor position relative to card bounding rect.
   - Smoothly maps offset to $\pm 10^\circ$ `rotateX` / `rotateY` with `perspective: 1000px`.
   - Dampens back to zero on mouse leave.
+- **`StereoscopicTitle.js` & `RandomLogoArrival.js`**:
+  - High-contrast display typography utilizing `Abril Fatface` with offset overprint shadow layer, pointer parallax, and GSAP spring pop on hover.
+  - Dual-theme color grading: deep ink slate (`#0f172a`) in light mode, crisp pure white in dark mode.
+  - Randomized vector trajectory entry with elastic landing dampening for the locomotive logo.
 
 ### Layer 3: Application State Management Topology
 The state is partitioned into 4 distinct tiers to ensure optimal rendering performance and separation of concerns:
@@ -94,6 +98,7 @@ The state is partitioned into 4 distinct tiers to ensure optimal rendering perfo
    - Manages application-wide session state:
      - `watchlist`: Saved trains for live tracking.
      - `savedPnrs`: Bookmarked passenger tickets.
+     - `activePnrQuery`: Deep-link PNR identifier for automated status verification.
      - `toasts`: Dynamic notification stack with auto-dismiss timers.
      - `emergencyDrawerOpen`: SOS emergency support drawer toggle.
      - `language`: Cycle through English, Hindi, and Regional options.
