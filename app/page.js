@@ -9,7 +9,6 @@ import StationBoard from '@/components/StationBoard';
 import PnrSection from '@/components/PnrSection';
 import FareCalculator from '@/components/FareCalculator';
 import ControlDashboard from '@/components/ControlDashboard';
-import PortfolioShowcase from '@/components/PortfolioShowcase';
 import ApiKeyModal from '@/components/ApiKeyModal';
 import CartDrawer from '@/components/CartDrawer';
 import EmergencyDrawer from '@/components/EmergencyDrawer';
@@ -20,7 +19,7 @@ import { ChevronRight, Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('home'); 
-  // 'home' | 'search' | 'live' | 'station-board' | 'pnr' | 'fare-calculator' | 'dashboard' | 'portfolio'
+  // 'home' | 'search' | 'live' | 'station-board' | 'pnr' | 'fare-calculator' | 'dashboard'
   
   const [activeTrainNumber, setActiveTrainNumber] = useState('12952');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
@@ -33,7 +32,7 @@ export default function Home() {
     const tabParam = params.get('tab');
     const trainParam = params.get('train');
 
-    if (tabParam && ['home', 'search', 'live', 'station-board', 'pnr', 'fare-calculator', 'dashboard', 'portfolio'].includes(tabParam)) {
+    if (tabParam && ['home', 'search', 'live', 'station-board', 'pnr', 'fare-calculator', 'dashboard'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     if (trainParam && /^\d{5}$/.test(trainParam)) {
@@ -76,7 +75,6 @@ export default function Home() {
     pnr: 'IRCTC PRS PNR Status & Berth Map',
     'fare-calculator': 'Fare Matrix & Distance Calculator',
     dashboard: 'Control Desk Operational Dashboard',
-    portfolio: 'PE-I System Architecture & Portfolio Hub',
   };
 
   return (
@@ -144,10 +142,6 @@ export default function Home() {
 
         {activeTab === 'dashboard' && (
           <ControlDashboard />
-        )}
-
-        {activeTab === 'portfolio' && (
-          <PortfolioShowcase />
         )}
       </main>
 
