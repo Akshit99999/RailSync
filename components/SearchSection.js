@@ -122,6 +122,7 @@ export default function SearchSection({ onTrackTrain }) {
       travelClass: selectedClass,
       quota: selectedQuota,
       baseFare,
+      demo: true,
       passengers: Array.from({ length: passengerCount }).map((_, i) => ({
         name: `Passenger ${i + 1}`,
         age: 25 + i * 2,
@@ -136,7 +137,7 @@ export default function SearchSection({ onTrackTrain }) {
   };
 
   return (
-    <div className="space-y-6 font-mono">
+    <div className="space-y-6">
       {/* Search Type Mode Switcher */}
       <div className="station-signboard p-4 sm:p-6 rounded-2xl transition-colors shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800">

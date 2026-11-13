@@ -69,7 +69,7 @@ export default function StationBoard({ onTrackTrain }) {
   });
 
   return (
-    <div className="space-y-6 font-mono">
+    <div className="space-y-6">
       {/* Search & Controller Card */}
       <div className="station-signboard p-4 sm:p-6 rounded-2xl shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800">

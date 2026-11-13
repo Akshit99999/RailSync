@@ -83,6 +83,7 @@ export default function FareCalculator({ onBookTicket }) {
       travelClass,
       quota,
       baseFare: Math.round(totalFare / passengersCount),
+      demo: true,
       passengers: Array.from({ length: passengersCount }).map((_, i) => ({
         name: `Passenger ${i + 1}`,
         age: 28,
@@ -91,34 +92,34 @@ export default function FareCalculator({ onBookTicket }) {
       })),
     });
     setCartOpen(true);
-    addToast('Fare estimate added to Journey Cart!', 'success');
+    addToast('Sample fare added to the demo cart.', 'success');
   };
 
   return (
-    <div className="space-y-6 font-mono">
+    <div className="space-y-6">
       {/* Header Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-zinc-900 to-black text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 rounded-sm bg-[#203b53] text-white border border-[#41586a] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-station-yellow text-xs font-bold uppercase tracking-wider mb-1">
             <Calculator size={16} />
-            <span>INDIAN RAILWAYS PRS FARE MATRIX & TELESCOPIC ESTIMATOR</span>
+            <span>Sample fare estimate</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">Interactive Ticket Fare Calculator</h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Calculates exact IRCTC ticket charges including Telescopic Distance Slabs, Superfast Surcharges, Tatkal Fees, and GST.
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Estimate a journey fare</h2>
+          <p className="text-sm text-slate-200 mt-1">
+            An illustrative estimate from a sample formula. Final fares must be checked with the official railway booking service.
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start md:self-auto px-3.5 py-2 rounded-xl bg-zinc-800/80 border border-zinc-700/80 text-xs text-zinc-300">
           <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
-          <span>IRCTC Telescopic Slabs 2026</span>
+          <span>Demonstration only</span>
         </div>
       </div>
 
       {/* Main Grid: Form Controls Left, Output Summary Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Form Controls */}
-        <div className="lg:col-span-7 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-5">
+        <div className="lg:col-span-7 bg-[var(--bg-surface)] border border-[var(--border-main)] rounded-sm p-6 space-y-5">
           <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3">
             <Train size={16} className="text-amber-500 dark:text-station-yellow" />
             <span>JOURNEY PARAMETERS</span>
