@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Radio, 
   Search, 
@@ -33,7 +33,7 @@ export default function StationBoard({ onTrackTrain }) {
   const { triggerTrainAnnouncement } = useApp();
 
   // Fetch board data
-  const fetchStationBoard = async (stnCode = selectedStation.code, hours = hoursWindow) => {
+  const fetchStationBoard = useCallback(async (stnCode = selectedStation.code, hours = hoursWindow) => {
     if (!stnCode) return;
     setIsLoading(true);
     setErrorMessage('');
@@ -54,13 +54,13 @@ export default function StationBoard({ onTrackTrain }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [hoursWindow, selectedStation.code]);
 
   useEffect(() => {
     if (selectedStation?.code) {
       fetchStationBoard(selectedStation.code, hoursWindow);
     }
-  }, [selectedStation, hoursWindow]);
+  }, [selectedStation.code, hoursWindow, fetchStationBoard]);
 
   // Filter trains
   const filteredTrains = (boardData?.trains || []).filter((t) => {
