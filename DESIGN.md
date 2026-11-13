@@ -171,10 +171,12 @@ At widths below 1120px, navigation moves into a compact menu. Below 760px, the i
 
 ## Elevation & Depth
 
-The main surface system is flat and rule-led: paper or blue-grey tonal layers establish grouping, and fine borders separate rows. The reviewed app removes decorative card lift, signal glow, and ambient shadows from the operating surface. Reserve depth for functional overlays such as drawers and dialogs, where elevation communicates that content is temporarily above the timetable.
+The main surface system is flat and rule-led: paper or blue-grey tonal layers establish grouping, and fine borders separate rows. The reviewed app removes decorative card lift, signal glow, and ambient shadows from the operating surface. Reserve depth for functional overlays such as drawers and dialogs, where elevation communicates that content is temporarily above the timetable. Motion is brief and functional: the route line draws once and stop rows arrive in sequence; hover feedback gives controls a small, clear response. Reduced-motion preferences remove entrance animation.
 
 ### Named Rules
 **The Flat Timetable Rule.** Keep route boards and ordinary lists flat; use tonal surfaces and rules to show structure before adding shadow.
+
+**The Route Progress Rule.** Use motion to clarify route order or confirm an action. Keep entrance movement small, run it once, and honor reduced-motion settings.
 
 ## Shapes
 
