@@ -13,9 +13,6 @@ import ApiKeyModal from '@/components/ApiKeyModal';
 import CartDrawer from '@/components/CartDrawer';
 import EmergencyDrawer from '@/components/EmergencyDrawer';
 import ToastContainer from '@/components/ToastContainer';
-import SignalField from '@/components/SignalField';
-import ScrollFeatures from '@/components/ScrollFeatures';
-import { ChevronRight, Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('home'); 
@@ -66,25 +63,8 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Human-readable labels for breadcrumb
-  const TAB_LABELS = {
-    home: 'Network Home',
-    search: 'Train Search & Route Engine',
-    live: `Live Telemetry (Train #${activeTrainNumber})`,
-    'station-board': 'Platform Display Board',
-    pnr: 'IRCTC PRS PNR Status & Berth Map',
-    'fare-calculator': 'Fare Matrix & Distance Calculator',
-    dashboard: 'Control Desk Operational Dashboard',
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-black text-slate-900 dark:text-zinc-100 transition-colors duration-200 font-mono relative">
-      {/* Background HTML5 Canvas Particle Field */}
-      <SignalField />
-
-      {/* Scroll Progress Bar & Floating Scroll-To-Top Button */}
-      <ScrollFeatures />
-
+    <div className="app-shell min-h-screen flex flex-col text-slate-900 dark:text-zinc-100 relative">
       {/* Navigation Bar */}
       <Navbar
         activeTab={activeTab}
@@ -94,22 +74,7 @@ export default function Home() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
-        {/* SPA Breadcrumbs Indicator */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-500">
-          <button
-            onClick={() => handleTabChange('home')}
-            className="flex items-center gap-1 hover:text-amber-600 dark:hover:text-station-yellow transition-colors"
-          >
-            <HomeIcon size={12} />
-            <span>RailSync</span>
-          </button>
-          <ChevronRight size={12} className="text-slate-400 dark:text-zinc-600" />
-          <span className="font-bold text-slate-800 dark:text-zinc-300">
-            {TAB_LABELS[activeTab] || 'Operational Desk'}
-          </span>
-        </nav>
-
+      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 py-7 sm:px-6 sm:py-10">
         {activeTab === 'home' && (
           <HomePage
             onNavigate={handleTabChange}
@@ -154,23 +119,11 @@ export default function Home() {
         onClose={() => setIsApiKeyModalOpen(false)}
       />
 
-      {/* Railway Platform Bottom Status Bar */}
-      <footer className="bg-white dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800/80 py-6 text-xs text-slate-500 dark:text-zinc-400 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="signal-lamp green"></span>
-            <span className="font-mono text-slate-700 dark:text-zinc-300 font-medium">
-              RAILSYNC TELEMETRY ENGINE • INDIAN RAILWAYS
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4 font-mono text-[11px] text-slate-600 dark:text-zinc-400">
-            <span>17 RAILWAY ZONES</span>
-            <span className="text-slate-300 dark:text-zinc-700">•</span>
-            <span>7,300+ STATIONS</span>
-            <span className="text-slate-300 dark:text-zinc-700">•</span>
-            <span className="text-amber-600 dark:text-station-yellow font-bold">ZUSTAND & CONTEXT API READY</span>
-          </div>
+      <footer className="app-footer">
+        <div className="app-footer-inner">
+          <span>RailSync</span>
+          <span>Railway information and journey tools</span>
+          <span>Demonstration project · verify journey details with the official source</span>
         </div>
       </footer>
     </div>

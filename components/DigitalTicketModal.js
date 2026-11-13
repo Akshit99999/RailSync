@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Printer, Train, ShieldCheck, QrCode, Calendar, Clock, MapPin, User } from 'lucide-react';
+import { X, Printer, Train, Calendar, Clock } from 'lucide-react';
 
 export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
   if (!isOpen || !ticket) return null;
@@ -11,7 +11,7 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
     }
   };
 
-  const pnrNumber = ticket.pnr || ('2' + Math.floor(100000000 + Math.random() * 900000000));
+  const pnrNumber = `DEMO-${ticket.pnr || 'SAMPLE'}`;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
@@ -21,7 +21,7 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
           <div className="flex items-center gap-2">
             <span className="signal-lamp green"></span>
             <span className="font-mono text-xs font-bold text-slate-800 dark:text-zinc-200 tracking-wider">
-              IRCTC / INDIAN RAILWAYS E-TICKET PASS
+              RAILSYNC DEMONSTRATION ITINERARY
             </span>
           </div>
 
@@ -44,6 +44,9 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
 
         {/* Boarding Pass Body */}
         <div className="p-6 overflow-y-auto space-y-5 font-mono print:p-0">
+          <p className="border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-sans font-semibold text-amber-950">
+            DEMO ONLY · Not a railway ticket. No reservation was made and no fare was charged.
+          </p>
           {/* Ticket Header Banner */}
           <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900 text-white">
             <div className="space-y-1">
@@ -54,7 +57,7 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
               <p className="text-xs text-zinc-400">CLASS: <strong className="text-white">{ticket.travelClass || '3A'}</strong> • QUOTA: <strong className="text-white">{ticket.quota || 'GN'}</strong></p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">PNR NUMBER</span>
+              <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">SAMPLE REFERENCE</span>
               <span className="text-lg font-black text-station-yellow tracking-wider">{pnrNumber}</span>
             </div>
           </div>
@@ -70,13 +73,13 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
             </div>
 
             <div className="flex flex-col items-center">
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase">CONFIRMED (CNF)</span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase">SAMPLE ONLY</span>
               <div className="w-full flex items-center justify-center my-1">
                 <div className="h-[2px] w-full bg-slate-300 dark:bg-zinc-700"></div>
                 <Train size={14} className="text-amber-500 mx-1 shrink-0" />
                 <div className="h-[2px] w-full bg-slate-300 dark:bg-zinc-700"></div>
               </div>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500">ELECTRONIC PRS</span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500">DEMO OUTPUT</span>
             </div>
 
             <div className="space-y-1 text-right">
@@ -91,21 +94,15 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
           {/* Passenger Berth Details */}
           <div className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden">
             <div className="bg-slate-100 dark:bg-zinc-900 px-4 py-2 border-b border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-300">
-              PASSENGER RESERVATION DETAILS
+              SAMPLE PASSENGER COUNT
             </div>
             <div className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-xs">
-              {(ticket.passengers && ticket.passengers.length > 0 ? ticket.passengers : [{ name: 'Aditya Sharma', age: 24, gender: 'Male', berthPref: 'Lower' }]).map((p, idx) => (
+              {(ticket.passengers && ticket.passengers.length > 0 ? ticket.passengers : Array.from({ length: ticket.passengerCount || 1 }, (_, number) => ({ number: number + 1 }))).map((p, idx) => (
                 <div key={idx} className="p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User size={14} className="text-slate-400" />
-                    <div>
-                      <span className="font-bold text-slate-800 dark:text-zinc-200">{idx + 1}. {p.name}</span>
-                      <span className="text-[11px] text-slate-500 ml-2">({p.age} Yrs, {p.gender})</span>
-                    </div>
-                  </div>
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">Sample passenger {idx + 1}</span>
                   <div className="text-right">
-                    <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold">
-                      COACH {ticket.travelClass === '1A' ? 'H1' : ticket.travelClass === '2A' ? 'A1' : 'B3'} / BERTH {18 + idx * 3} ({p.berthPref || 'Lower'})
+                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-bold">
+                      {ticket.berthPreference || 'Lower'} preference · no berth assigned
                     </span>
                   </div>
                 </div>
@@ -116,21 +113,16 @@ export default function DigitalTicketModal({ ticket, isOpen, onClose }) {
           {/* Fare Summary & QR Code */}
           <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50/50 dark:bg-zinc-900/40 border border-dashed border-amber-300 dark:border-zinc-700">
             <div className="space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider">TOTAL FARE PAID</span>
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider">ESTIMATED SAMPLE FARE</span>
               <p className="text-2xl font-black text-amber-600 dark:text-station-yellow">
                 ₹{ticket.baseFare ? (ticket.baseFare * (ticket.passengers?.length || 1) + 85) : '1,935'}
               </p>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">
-                <ShieldCheck size={12} /> VERIFIED ELECTRONIC PRS TICKET
-              </span>
+              <span className="text-[10px] text-amber-800 dark:text-amber-300 flex items-center gap-1 font-semibold">Not charged · no ticket issued</span>
             </div>
 
-            {/* Simulated Scannable QR Code */}
             <div className="flex flex-col items-center">
-              <div className="p-2 bg-white rounded-lg border border-slate-300 shadow-sm">
-                <QrCode size={56} className="text-black" />
-              </div>
-              <span className="text-[9px] text-slate-400 mt-1">SCAN AT TC DESK</span>
+              <div className="w-16 h-16 grid place-items-center border border-amber-400 text-xs font-black text-amber-800">DEMO</div>
+              <span className="text-[9px] text-slate-500 mt-1">NOT FOR TRAVEL</span>
             </div>
           </div>
         </div>

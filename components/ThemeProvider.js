@@ -3,13 +3,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState('dark');
+  const [theme, setThemeState] = useState('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,9 +20,9 @@ export function ThemeProvider({ children }) {
       setThemeState(stored);
       applyTheme(stored);
     } else {
-      // Default to dark mode (Yellow & Black)
-      setThemeState('dark');
-      applyTheme('dark');
+      // Light mode suits the timetable's daytime reading surface.
+      setThemeState('light');
+      applyTheme('light');
     }
     setMounted(true);
   }, []);

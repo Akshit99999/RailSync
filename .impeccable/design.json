@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T15:38:57.000Z",
+  "title": "Design System: RailSync",
+  "extensions": {
+    "colorMeta": {
+      "railway-blue": { "role": "primary", "displayName": "Railway Blue", "canonical": "#203b53", "tonalRamp": ["#07111c", "#102234", "#18314a", "#203b53", "#456079", "#71889b", "#a6b5c0", "#e4e8eb"] },
+      "railway-blue-dark": { "role": "primary", "displayName": "Railway Blue Night Header", "canonical": "#203b53", "tonalRamp": ["#07111c", "#102234", "#18314a", "#203b53", "#456079", "#71889b", "#a6b5c0", "#e4e8eb"] },
+      "canvas-paper": { "role": "neutral", "displayName": "Warm Timetable Paper", "canonical": "#f3f1eb", "tonalRamp": ["#211f1b", "#393731", "#5a574f", "#817d74", "#aaa69c", "#cbc7be", "#e1ded6", "#f7f6f2"] },
+      "canvas-night": { "role": "neutral", "displayName": "Night Timetable Ground", "canonical": "#172331", "tonalRamp": ["#090e15", "#101923", "#172331", "#263646", "#405261", "#687784", "#a5afb7", "#e8ebed"] },
+      "surface-paper": { "role": "neutral", "displayName": "Paper Surface", "canonical": "#fffefa", "tonalRamp": ["#22211e", "#3a3934", "#5c5a53", "#838179", "#aba99f", "#cccbc2", "#e3e2d9", "#fffefa"] },
+      "surface-night": { "role": "neutral", "displayName": "Night Surface", "canonical": "#202e3d", "tonalRamp": ["#0b1017", "#131c26", "#202e3d", "#304253", "#506272", "#798894", "#acb6bd", "#edf0f1"] },
+      "surface-raised-night": { "role": "neutral", "displayName": "Raised Night Surface", "canonical": "#2a3948", "tonalRamp": ["#0c1117", "#19232d", "#2a3948", "#3e5060", "#61717f", "#89959f", "#b7bfc5", "#f0f2f3"] },
+      "ink-primary": { "role": "neutral", "displayName": "Timetable Ink", "canonical": "#1d2935", "tonalRamp": ["#080b0f", "#111820", "#1d2935", "#34414e", "#59646e", "#858d94", "#b9bdc1", "#f0f1f2"] },
+      "ink-muted": { "role": "neutral", "displayName": "Muted Ink", "canonical": "#4e5964", "tonalRamp": ["#101317", "#252c33", "#4e5964", "#69737d", "#879099", "#a8afb5", "#cdd1d4", "#f2f3f3"] },
+      "ink-dim": { "role": "neutral", "displayName": "Dim Ink", "canonical": "#68727b", "tonalRamp": ["#171a1d", "#30363b", "#4c555d", "#68727b", "#899198", "#aeb4b8", "#d0d3d5", "#f3f4f4"] },
+      "ink-primary-night": { "role": "neutral", "displayName": "Night Primary Ink", "canonical": "#f3f2ed", "tonalRamp": ["#20201d", "#3a3935", "#5b5a55", "#817f79", "#aaa9a3", "#cbc9c4", "#e2e1dc", "#f3f2ed"] },
+      "ink-muted-night": { "role": "neutral", "displayName": "Night Muted Ink", "canonical": "#c2c7ca", "tonalRamp": ["#191b1c", "#333739", "#545a5d", "#777f83", "#9ca4a8", "#c2c7ca", "#d9dddf", "#f3f4f4"] },
+      "rule-paper": { "role": "neutral", "displayName": "Paper Rule", "canonical": "#d8d5cc", "tonalRamp": ["#1e1d1a", "#36342f", "#57554f", "#7d7b74", "#a6a39c", "#c3c0b8", "#d8d5cc", "#f4f3f0"] },
+      "rule-night": { "role": "neutral", "displayName": "Night Rule", "canonical": "#40505e", "tonalRamp": ["#0e1216", "#1f272e", "#40505e", "#5f6e7b", "#84909a", "#aab3ba", "#d0d5d8", "#f3f5f6"] },
+      "route-saffron": { "role": "secondary", "displayName": "Route Saffron", "canonical": "#eab638", "tonalRamp": ["#2a1e08", "#49340d", "#765414", "#a7781d", "#d19a2a", "#eab638", "#f3d17a", "#fcf3d8"] },
+      "route-saffron-night": { "role": "secondary", "displayName": "Night Route Saffron", "canonical": "#f1c45b", "tonalRamp": ["#2e220b", "#523c12", "#89631e", "#be8c32", "#e0ad45", "#f1c45b", "#f7dda0", "#fdf5e1"] },
+      "provider-green": { "role": "tertiary", "displayName": "Provider Green", "canonical": "#10b981", "tonalRamp": ["#06241b", "#084a36", "#087653", "#0c9d6e", "#10b981", "#53d0a6", "#9be6cc", "#e4faf2"] },
+      "signal-amber": { "role": "tertiary", "displayName": "Signal Amber", "canonical": "#f59e0b", "tonalRamp": ["#2b1a02", "#583502", "#8a5304", "#c07707", "#f59e0b", "#f8b94e", "#fbd99b", "#fff4df"] },
+      "signal-red": { "role": "tertiary", "displayName": "Signal Red", "canonical": "#ef4444", "tonalRamp": ["#2a0909", "#551111", "#881d1d", "#c52d2d", "#ef4444", "#f57878", "#fab0b0", "#ffeded"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Task Display", "purpose": "The home-screen heading; large and compact enough to establish the lookup task." },
+      "headline": { "displayName": "Section Headline", "purpose": "Route-board and section headings." },
+      "title": { "displayName": "UI Title", "purpose": "Navigation, row names, and control labels." },
+      "body": { "displayName": "Reading Copy", "purpose": "Descriptions and explanatory copy." },
+      "action": { "displayName": "Primary Action", "purpose": "Bold compact label on the train-status lookup action." },
+      "nav": { "displayName": "Navigation Label", "purpose": "Compact header navigation labels." },
+      "label": { "displayName": "Compact Label", "purpose": "Control labels, data-source state, and small captions." },
+      "timetable": { "displayName": "Timetable Numerals", "purpose": "Tabular monospaced train identifiers, station codes, and times." }
+    },
+    "shadows": [
+      { "name": "lookup-focus", "value": "0 0 0 2px rgba(49,90,121,0.16)", "purpose": "Subtle blue focus-within halo on the main lookup control." },
+      { "name": "overlay-elevation", "value": "0 4px 20px rgba(0,0,0,0.25)", "purpose": "Functional depth for map popups and temporary overlay surfaces." }
+    ],
+    "motion": [
+      { "name": "control-transition", "value": "140ms ease", "purpose": "Short color and border transitions for navigation and controls." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "Minimize transitions and turn off animation when the user requests reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-navigation", "value": "1120px" },
+      { "name": "single-column", "value": "760px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Train Status Lookup",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The saffron action submits a five-digit train number for running status.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Check status <span aria-hidden=\"true\">→</span></button>",
+      "css": ".ds-button-primary { min-height: 54px; padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; border: 0; background: #e8b54a; color: #1e2d39; font: 700 13px/1 Inter, ui-sans-serif, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-button-primary:hover { background: #f0c968; } .ds-button-primary:focus-visible { outline: 3px solid #d69725; outline-offset: 3px; } .ds-button-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A compact bordered surface action for secondary controls.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">Open details</button>",
+      "css": ".ds-button-secondary { min-height: 36px; padding: 0 12px; border: 1px solid #d8d5cc; border-radius: 6px; background: #fffefa; color: #1d2935; font: 600 12px/1.2 Inter, ui-sans-serif, sans-serif; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; } .ds-button-secondary:hover { border-color: #eab638; background: #ece9e1; } .ds-button-secondary:focus-visible { outline: 3px solid #d69725; outline-offset: 3px; }"
+    },
+    {
+      "name": "Train Number Input",
+      "kind": "input",
+      "refersTo": "input-lookup",
+      "description": "A tabular-figure field for entering a five-digit train number.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-train\">Train number</label><input class=\"ds-input-lookup\" id=\"ds-train\" type=\"text\" inputmode=\"numeric\" placeholder=\"e.g. 12952\" />",
+      "css": ".ds-field-label { display: block; margin-bottom: 8px; color: #354451; font: 650 13px/1.3 Inter, ui-sans-serif, sans-serif; } .ds-input-lookup { width: 100%; min-height: 54px; padding: 0 14px; border: 1px solid #8a969c; border-radius: 0; background: #fffefa; color: #1d2935; font: 550 17px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input-lookup::placeholder { color: #7c858a; } .ds-input-lookup:hover { border-color: #68727b; } .ds-input-lookup:focus-visible { border-color: #315a79; outline: 3px solid rgba(49,90,121,0.16); outline-offset: 0; }"
+    },
+    {
+      "name": "Primary Navigation Link",
+      "kind": "nav",
+      "refersTo": "navigation-link",
+      "description": "Compact header navigation with a saffron rule for the current section.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><button class=\"ds-nav-link ds-is-active\" type=\"button\">Overview</button><button class=\"ds-nav-link\" type=\"button\">Find trains</button></nav>",
+      "css": ".ds-nav { display: flex; align-items: stretch; gap: 2px; background: #203b53; } .ds-nav-link { min-height: 68px; padding: 0 11px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #d4dce1; font: 550 13px/1.2 Inter, ui-sans-serif, sans-serif; cursor: pointer; transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease; } .ds-nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); } .ds-nav-link.ds-is-active { color: #fff; border-bottom-color: #f1c45b; } .ds-nav-link:focus-visible { outline: 3px solid #d69725; outline-offset: -3px; }"
+    },
+    {
+      "name": "Route Timetable",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Station sequence with endpoint markers and right-aligned tabular arrival or departure times.",
+      "html": "<div class=\"ds-route-board\"><div class=\"ds-route-heading\"><strong>One journey, stop by stop.</strong><span>ILLUSTRATIVE</span></div><div class=\"ds-route-row ds-route-end\"><i aria-hidden=\"true\"></i><b>NDLS</b><span>New Delhi</span><time>16:55</time></div><div class=\"ds-route-row\"><i aria-hidden=\"true\"></i><b>KOTA</b><span>Kota Junction</span><time>21:30</time></div><p class=\"ds-route-note\">Illustrative data · not a live running update</p></div>",
+      "css": ".ds-route-board { padding: 2px 0 0 28px; border-left: 1px solid #d8d5cc; color: #1d2935; } .ds-route-heading { margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #203b53; font: 700 21px/1.2 Inter, ui-sans-serif, sans-serif; letter-spacing: -0.025em; } .ds-route-heading span { padding: 5px 7px; border: 1px solid #bb974a; color: #755516; font: 750 10px/1.2 Inter, ui-sans-serif, sans-serif; letter-spacing: 0.07em; } .ds-route-row { position: relative; min-height: 45px; display: grid; grid-template-columns: 52px 52px minmax(0,1fr) auto; align-items: center; gap: 6px; color: #4c5861; font: 400 12px/1.3 Inter, ui-sans-serif, sans-serif; } .ds-route-row::before { content: ''; position: absolute; top: -22px; bottom: 22px; left: 25px; width: 2px; background: #a9b3b6; } .ds-route-row i { z-index: 1; width: 10px; height: 10px; margin-left: 21px; border: 2px solid #f3f1eb; border-radius: 50%; background: #607889; box-shadow: 0 0 0 1px #607889; } .ds-route-row.ds-route-end i { width: 13px; height: 13px; background: #dca733; box-shadow: 0 0 0 1px #9b762b; } .ds-route-row b, .ds-route-row time { color: #243c50; font: 700 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; } .ds-route-row time { font-size: 12px; } .ds-route-note { margin: 8px 0 0 58px; color: #6a747b; font: 400 11px/1.4 Inter, ui-sans-serif, sans-serif; } .ds-route-row:hover { background: rgba(32,59,83,0.04); } .ds-route-row:focus-visible { outline: 3px solid #d69725; outline-offset: 2px; }"
+    },
+    {
+      "name": "Sample Train Row",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "A thin-ruled selectable row that leads with the train number and route endpoints.",
+      "html": "<button class=\"ds-train-row\" type=\"button\"><b>12952</b><span><strong>Tejas Rajdhani Express</strong><small>New Delhi → Mumbai Central</small></span><i aria-hidden=\"true\">→</i></button>",
+      "css": ".ds-train-row { width: 100%; min-height: 66px; padding: 10px 4px; display: grid; grid-template-columns: 82px 1fr 24px; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid #d8d5cc; background: transparent; color: #253746; text-align: left; cursor: pointer; transition: background-color 150ms ease; } .ds-train-row > b { color: #294d68; font: 700 14px/1 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; } .ds-train-row span { display: flex; flex-direction: column; gap: 4px; } .ds-train-row strong { font: 680 13px/1.3 Inter, ui-sans-serif, sans-serif; } .ds-train-row small { color: #5b666e; font: 400 12px/1.3 Inter, ui-sans-serif, sans-serif; } .ds-train-row i { color: #6d7981; font: normal 18px/1 Inter, sans-serif; text-align: right; transition: color 150ms ease, transform 150ms ease; } .ds-train-row:hover { background: rgba(32,59,83,0.04); } .ds-train-row:hover i { color: #a56614; transform: translateX(2px); } .ds-train-row:focus-visible { outline: 3px solid #d69725; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tool Navigation Row",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "A low-chrome shortcut row that keeps passenger and operations tools one step away.",
+      "html": "<button class=\"ds-tool-row\" type=\"button\"><span class=\"ds-tool-icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"><circle cx=\"10.8\" cy=\"10.8\" r=\"6.8\"/><path d=\"m16 16 4.2 4.2\"/></svg></span><span class=\"ds-tool-copy\"><strong>Find trains</strong><small>Compare services between two stations</small></span><i aria-hidden=\"true\">↗</i></button>",
+      "css": ".ds-tool-row { width: 100%; min-height: 76px; padding: 12px 14px 12px 2px; display: flex; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid #d8d5cc; background: transparent; color: #253746; text-align: left; cursor: pointer; transition: background-color 150ms ease; } .ds-tool-icon { width: 30px; height: 30px; display: grid; place-items: center; color: #315a79; font-size: 22px; } .ds-tool-copy { display: flex; flex-direction: column; gap: 4px; } .ds-tool-copy strong { color: #253746; font: 700 13px/1.3 Inter, ui-sans-serif, sans-serif; } .ds-tool-copy small { color: #5b666e; font: 400 12px/1.35 Inter, ui-sans-serif, sans-serif; } .ds-tool-row > i { margin-left: auto; color: #71808a; font: normal 17px/1 Inter, sans-serif; } .ds-tool-row:hover { background: rgba(32,59,83,0.04); } .ds-tool-row:hover > i { color: #a56614; transform: translate(2px,-2px); } .ds-tool-row:focus-visible { outline: 3px solid #d69725; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Editorial Rail Timetable",
+    "overview": "RailSync treats the timetable as an instrument for finding one service among many. A warm paper field, deep railway-blue shell, and fine rules give the interface the calm order of a printed schedule adapted for a working web app. The central route is read as a sequence of stations, codes, and times; tabular numerals make the information line up at a glance.\n\nThe selected route receives a restrained saffron highlight, while green, amber, and red are reserved for actual provider or railway status. The light and night themes keep the same hierarchy and route order across a warm paper palette and a dark blue-grey palette. Data-source labels remain close to railway results so sample information cannot be mistaken for verified live updates.",
+    "keyCharacteristics": [
+      "Timetable order and thin rules carry structure.",
+      "Warm paper, railway blue, and route saffron anchor the palette.",
+      "Station codes, train numbers, and times use tabular monospaced figures.",
+      "Sample and illustrative results are labeled at the point of use."
+    ],
+    "rules": [
+      { "name": "The Signal Means Something Rule", "body": "Green, amber, and red indicate a real status or provider state; never use them as decorative accents.", "section": "colors" },
+      { "name": "The Source Stays Visible Rule", "body": "Keep sample, illustrative, or provider-source labeling next to the railway information it qualifies.", "section": "colors" },
+      { "name": "The Number Alignment Rule", "body": "Use tabular monospaced figures for train numbers, station codes, and times; preserve their alignment as the viewport narrows.", "section": "typography" },
+      { "name": "The Flat Timetable Rule", "body": "Keep route boards and ordinary lists flat; use tonal surfaces and rules to show structure before adding shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the warm paper ground and deep railway-blue shell for the light theme, with the blue-grey night surfaces for dark mode.",
+      "Do use saffron to point to the selected route or the primary lookup action.",
+      "Do keep timetable values aligned in the mono stack and let thin rules establish row rhythm.",
+      "Do keep the source and sample-data qualification close to the information it describes.",
+      "Do retain visible keyboard focus and readable mobile route columns."
+    ],
+    "donts": [
+      "Don't present simulated data as a verified live update or a confirmed booking result.",
+      "Don't use status colors as decoration or add glow effects to the timetable's signal marks.",
+      "Don't turn the home workspace into a generic bento-card dashboard or add decorative gradients and paper textures.",
+      "Don't use shadows or animated lift on ordinary route and list content."
+    ]
+  }
+}
