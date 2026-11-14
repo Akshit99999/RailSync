@@ -35,9 +35,8 @@ export default function WelcomePage() {
 
       <section className="landing-hero" aria-labelledby="landing-title">
         <div className="landing-copy">
-          <p className="landing-eyebrow"><span /> Indian rail journey tools</p>
-          <h1 id="landing-title">The journey starts with a better timetable.</h1>
-          <p className="landing-description">Find a train, follow its route, or check a reservation reference. Your essential journey information, in one place.</p>
+          <h1 id="landing-title">Find your train. Follow every stop.</h1>
+          <p className="landing-description">Search a service, check its route, or look up a PNR. Sample information is marked clearly, so you know what you are looking at.</p>
 
           <form className="landing-search" action="/" method="get">
             <input type="hidden" name="tab" value="live" />
@@ -78,11 +77,11 @@ export default function WelcomePage() {
       </section>
 
       <section className="landing-tasks" aria-labelledby="landing-tasks-title">
-        <div className="landing-section-heading"><div><span className="landing-overline">Useful, from the first search</span><h2 id="landing-tasks-title">What do you need to check?</h2></div><a href="/?tab=search">See all tools <ArrowRight size={15} /></a></div>
+        <div className="landing-section-heading"><div><h2 id="landing-tasks-title">Go straight to a task</h2></div><a href="/?tab=search">All train tools <ArrowRight size={15} /></a></div>
         <div className="landing-task-grid">
           {tasks.map(({ href, icon: Icon, title, description }) => (
-            <a className="landing-task glass-panel" href={href} key={title}>
-              <span className="landing-task-icon"><Icon size={19} strokeWidth={1.8} /></span>
+            <a className="landing-task" href={href} key={title}>
+              <span className="landing-task-icon"><Icon size={18} strokeWidth={1.8} /></span>
               <span className="landing-task-copy"><strong>{title}</strong><small>{description}</small></span>
               <ArrowUpRight className="landing-task-arrow" size={17} />
             </a>
