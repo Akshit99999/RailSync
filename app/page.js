@@ -74,7 +74,7 @@ export default function Home() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 py-7 sm:px-6 sm:py-10">
+      <main key={activeTab} className="app-main-transition flex-1 w-full max-w-[1440px] mx-auto px-4 py-7 sm:px-6 sm:py-10">
         {activeTab === 'home' && (
           <HomePage
             onNavigate={handleTabChange}
