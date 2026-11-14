@@ -124,6 +124,7 @@ export default function Home() {
           <span>RailSync</span>
           <span>Railway information and journey tools</span>
           <span>Demonstration project · verify journey details with the official source</span>
+          <a href="/welcome">About RailSync</a>
         </div>
       </footer>
     </div>

@@ -208,6 +208,9 @@ The interface uses mostly square corners with a small, practical radius on contr
 ### Navigation
 - **Style:** the desktop header is a deep blue band with compact labels and utility controls. The current section is marked by a saffron bottom rule; inactive links use softened light text. Below 1120px, links move into a dark header panel and the current item receives a restrained tonal fill.
 
+### Landing Page
+The welcome surface pairs a short train-number form with an illustrative glass route board. The direct search action is primary; route search, PNR, and station-board tasks sit in a compact row below. Keep this page distinct from the operational workspace, and make the sample status visible beside the route it qualifies.
+
 ### Route Timetable
 The route is a four-column reading pattern: station marker, code, name, and right-aligned time. A thin vertical line connects the stops; saffron marks the endpoints and muted steel marks intermediate stops. Keep the “Illustrative” stamp and non-live note visible with sample routes.
 

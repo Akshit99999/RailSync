@@ -7,7 +7,7 @@ related_targets: ["app/globals.css","components/HomePage.js","components/Navbar.
 
 ## Surface contract
 
-SCOPE: RailSync's main web application shell and home screen. Mode: Operate.
+SCOPE: RailSync's main web application shell, task screens, and separate welcome landing page. Mode: Operate.
 AUDIENCE AND JOB: Passengers, railfans, and operations users need quick access to train status, route search, PNR lookup, station boards, fare estimates, and the control desk. The main page prioritizes train lookup while exposing the other jobs as clear, standard navigation.
 PROOF AND CONTENT: Use the existing train and station fixtures. Clearly identify simulator output as sample data; use provider status only where the app can verify it. Do not present synthetic punctuality totals, booking outcomes, or coverage claims as facts.
 CONSTRAINTS: Preserve all existing workflows, URLs, API calls, saved items, drawers, theme and audio controls. Mobile and desktop web. The product is a demo and has no connected relational database in this repo.

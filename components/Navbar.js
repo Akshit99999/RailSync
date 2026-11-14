@@ -73,6 +73,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onT
 
         <nav className="primary-nav" aria-label="Main navigation">
           <button type="button" className={`nav-link ${activeTab === 'home' ? 'is-active' : ''}`} aria-current={activeTab === 'home' ? 'page' : undefined} onClick={() => navigate('home')}>Overview</button>
+          <a className="nav-link landing-nav-link" href="/welcome">Welcome</a>
           {navItems.map(({ id, label }) => (
             <button type="button" key={id} className={`nav-link ${activeTab === id ? 'is-active' : ''}`} aria-current={activeTab === id ? 'page' : undefined} onClick={() => navigate(id)}>
               {label}
@@ -115,6 +116,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenApiKeyModal, onT
       {mobileMenuOpen && (
         <div className="mobile-nav-panel">
           <button type="button" className={`nav-link ${activeTab === 'home' ? 'is-active' : ''}`} aria-current={activeTab === 'home' ? 'page' : undefined} onClick={() => navigate('home')}>Overview</button>
+          <a className="nav-link landing-nav-link" href="/welcome" onClick={() => setMobileMenuOpen(false)}>Welcome</a>
           {navItems.map(({ id, label, icon: Icon }) => (
             <button type="button" key={id} className={`nav-link ${activeTab === id ? 'is-active' : ''}`} aria-current={activeTab === id ? 'page' : undefined} onClick={() => navigate(id)}>
               <Icon size={16} />{label}
