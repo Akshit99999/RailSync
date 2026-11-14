@@ -21,6 +21,9 @@ colors:
   provider-green: "#10b981"
   signal-amber: "#f59e0b"
   signal-red: "#ef4444"
+  glass-paper: "rgba(255, 254, 250, 0.58)"
+  glass-night: "rgba(31, 47, 62, 0.64)"
+  glass-edge: "rgba(255, 255, 255, 0.82)"
 typography:
   display:
     fontFamily: "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -102,15 +105,15 @@ components:
 
 ## Overview
 
-**Creative North Star: "The Editorial Rail Timetable"**
+**Creative North Star: "The Glass Timetable"**
 
-RailSync treats the timetable as an instrument for finding one service among many. A warm paper field, deep railway-blue shell, and fine rules give the interface the calm order of a printed schedule adapted for a working web app. The central route is read as a sequence of stations, codes, and times; tabular numerals make the information line up at a glance.
+RailSync treats the timetable as an instrument for finding one service among many, set inside a layered glass interface. A deep railway-blue glass navigation bar and softly frosted work surfaces add depth while warm paper and fine rules keep the routes readable. The central route is read as a sequence of stations, codes, and times; tabular numerals make the information line up at a glance.
 
-The selected route receives a restrained saffron highlight, while green, amber, and red are reserved for actual provider or railway status. The light and night themes keep the same hierarchy and route order across a warm paper palette and a dark blue-grey palette. Data-source labels remain close to railway results so sample information cannot be mistaken for verified live updates.
+The selected route receives a restrained saffron highlight, while green, amber, and red are reserved for actual provider or railway status. The light and night themes keep the same hierarchy and route order across translucent paper and blue-grey glass. Blur is reserved for navigation, the primary work surface, and task panels; route rows stay crisp. Data-source labels remain close to railway results so sample information cannot be mistaken for verified live updates.
 
 **Key Characteristics:**
 - Timetable order and thin rules carry structure.
-- Warm paper, railway blue, and route saffron anchor the palette.
+- Frosted paper glass, railway blue, and route saffron anchor the palette.
 - Station codes, train numbers, and times use tabular monospaced figures.
 - Sample and illustrative results are labeled at the point of use.
 
@@ -171,10 +174,10 @@ At widths below 1120px, navigation moves into a compact menu. Below 760px, the i
 
 ## Elevation & Depth
 
-The main surface system is flat and rule-led: paper or blue-grey tonal layers establish grouping, and fine borders separate rows. The reviewed app removes decorative card lift, signal glow, and ambient shadows from the operating surface. Reserve depth for functional overlays such as drawers and dialogs, where elevation communicates that content is temporarily above the timetable. Motion is brief and functional: the route line draws once and stop rows arrive in sequence; hover feedback gives controls a small, clear response. Reduced-motion preferences remove entrance animation.
+The surface system pairs frosted panels with crisp, rule-led timetable rows. Blur is used on the navigation, primary work area, and functional tool panels; ordinary rows remain sharp. Thin highlights and low shadows make glass edges legible without neon or glow. Reserve stronger depth for drawers and dialogs. Motion is brief and functional: the route line draws once and stop rows arrive in sequence; hover feedback gives controls a small, clear response. Reduced-motion preferences remove entrance animation.
 
 ### Named Rules
-**The Flat Timetable Rule.** Keep route boards and ordinary lists flat; use tonal surfaces and rules to show structure before adding shadow.
+**The Clear Glass Rule.** Apply translucency to navigation and meaningful work surfaces. Keep data rows opaque enough to read cleanly and do not blur every element.
 
 **The Route Progress Rule.** Use motion to clarify route order or confirm an action. Keep entrance movement small, run it once, and honor reduced-motion settings.
 
@@ -192,9 +195,9 @@ The interface uses mostly square corners with a small, practical radius on contr
 
 ### Cards / Containers
 - **Corner Style:** the main home route and train lists are square-edged and flat; compact signboards use a 4px radius.
-- **Background:** route and list content share the page ground; input fields use a brighter surface.
-- **Shadow Strategy:** flat at rest; overlays may use functional elevation.
-- **Border:** thin neutral rules separate content and route columns.
+- **Background:** navigation and primary task panels use tinted translucent surfaces; route and list content retain clear grounds.
+- **Shadow Strategy:** soft elevation and a fine inner highlight define glass panels; stronger elevation is reserved for overlays.
+- **Border:** translucent edge highlights define glass; thin neutral rules separate content and route columns.
 - **Internal Padding:** rows use about 10–14px vertical padding; primary workspace uses 24–34px section padding.
 
 ### Inputs / Fields
@@ -214,7 +217,7 @@ Train number leads, service name and endpoint pair follow, and a small arrow sig
 ## Do's and Don'ts
 
 ### Do:
-- **Do** use the warm paper ground and deep railway-blue shell for the light theme, with the blue-grey night surfaces for dark mode.
+- **Do** use frosted paper glass and a deep railway-blue shell for the light theme, with blue-grey glass surfaces for dark mode.
 - **Do** use saffron to point to the selected route or the primary lookup action.
 - **Do** keep timetable values aligned in the mono stack and let thin rules establish row rhythm.
 - **Do** keep the source and sample-data qualification close to the information it describes.
@@ -224,4 +227,5 @@ Train number leads, service name and endpoint pair follow, and a small arrow sig
 - **Don't** present simulated data as a verified live update or a confirmed booking result.
 - **Don't** use status colors as decoration or add glow effects to the timetable's signal marks.
 - **Don't** turn the home workspace into a generic bento-card dashboard or add decorative gradients and paper textures.
-- **Don't** use shadows or animated lift on ordinary route and list content.
+- **Don't** blur every surface or place text directly over busy, low-contrast backgrounds.
+- **Don't** use neon glow or animated lift on ordinary route and list content.
