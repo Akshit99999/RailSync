@@ -174,7 +174,7 @@ At widths below 1120px, navigation moves into a compact menu. Below 760px, the i
 
 ## Elevation & Depth
 
-The surface system pairs frosted panels with crisp, rule-led timetable rows. Blur is used on the navigation, primary work area, and functional tool panels; ordinary rows remain sharp. Thin highlights and low shadows make glass edges legible without neon or glow. Reserve stronger depth for drawers and dialogs. Motion is brief and functional: the route line draws once and stop rows arrive in sequence; hover feedback gives controls a small, clear response. Reduced-motion preferences remove entrance animation.
+The surface system pairs frosted panels with crisp, rule-led timetable rows. Blur is used on the navigation, primary work area, and functional tool panels; ordinary rows remain sharp. Thin highlights and low shadows make glass edges legible without neon or glow. Reserve stronger depth for drawers and dialogs. Motion is brief and functional: the landing route draws once, a train marker traces the sample route and signals each stop, and rows arrive in sequence. Hover feedback gives controls a small, clear response. Reduced-motion preferences remove entrance and route animations.
 
 ### Named Rules
 **The Clear Glass Rule.** Apply translucency to navigation and meaningful work surfaces. Keep data rows opaque enough to read cleanly and do not blur every element.
