@@ -61,14 +61,17 @@ export default function WelcomePage() {
             <span className="landing-sample-mark">Sample</span>
           </div>
           <div className="landing-train-line"><strong>12952</strong><span>Tejas Rajdhani Express</span></div>
-          <ol className="landing-stops">
-            {routes.map((stop) => (
-              <li className={`landing-stop ${stop.edge || ''}`} key={stop.code}>
-                <span className="landing-stop-marker" aria-hidden="true" />
-                <strong>{stop.code}</strong><span>{stop.name}</span><time>{stop.time}</time>
-              </li>
-            ))}
-          </ol>
+          <div className="landing-route-track">
+            <ol className="landing-stops">
+              {routes.map((stop) => (
+                <li className={`landing-stop ${stop.edge || ''}`} key={stop.code}>
+                  <span className="landing-stop-marker" aria-hidden="true" />
+                  <strong>{stop.code}</strong><span>{stop.name}</span><time>{stop.time}</time>
+                </li>
+              ))}
+            </ol>
+            <span className="landing-moving-train" aria-hidden="true"><TrainFront size={14} strokeWidth={2.2} /></span>
+          </div>
           <p className="landing-disclaimer">Illustrative timetable · not a live update</p>
           <a className="landing-route-link" href="/?tab=live&train=12952">View train details <ArrowUpRight size={15} /></a>
         </aside>
