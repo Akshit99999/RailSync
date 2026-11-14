@@ -5,15 +5,7 @@ import {
   CheckCircle2, 
   ArrowRight, 
   ArrowLeft, 
-  ShieldCheck, 
-  Eye, 
-  EyeOff, 
-  User, 
-  Phone, 
-  Lock, 
-  Ticket,
-  Train,
-  Sparkles
+  Train
 } from 'lucide-react';
 import MagneticButton from './MagneticButton';
 import { useCartStore } from '@/store/useCartStore';
@@ -30,23 +22,16 @@ export default function BookingWizard({ onComplete }) {
   const [travelClass, setTravelClass] = useState('3A');
   const [quota, setQuota] = useState('TATKAL');
 
-  // Step 2: Passenger Details
-  const [passengerName, setPassengerName] = useState('');
-  const [age, setAge] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  // Demo flow avoids collecting personal or account information.
+  const [passengerCount, setPassengerCount] = useState('1');
   const [berthPreference, setBerthPreference] = useState('LOWER');
 
-  // Step 3: Security & Verification
-  const [irctcPassword, setIrctcPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [securityPin, setSecurityPin] = useState('');
-  const [showPin, setShowPin] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
   // Validation checks
   const isStep1Valid = Boolean(trainNumber.length === 5 && travelClass && quota);
-  const isStep2Valid = Boolean(passengerName.trim().length >= 3 && age >= 5 && phoneNumber.length === 10);
-  const isStep3Valid = Boolean(irctcPassword.length >= 6 && securityPin.length === 4);
+  const isStep2Valid = Number(passengerCount) >= 1 && Number(passengerCount) <= 6;
+  const isStep3Valid = true;
 
   const handleNext = () => {
     if (currentStep === 1 && isStep1Valid) setCurrentStep(2);
@@ -58,20 +43,24 @@ export default function BookingWizard({ onComplete }) {
         id: `tkt-${Date.now()}`,
         trainNumber,
         trainName,
-        from: 'NDLS',
-        to: 'MMCT',
-        class: travelClass,
+        fromStation: 'NDLS',
+        toStation: 'MMCT',
+        travelClass,
         quota,
         distance: 1384,
-        date: 'Tomorrow',
+        travelDate: 'Tomorrow · demo',
         pnr: mockPnr,
-        passenger: passengerName,
+        passengerCount: Number(passengerCount),
+        passengers: Array.from({ length: Number(passengerCount) }, (_, index) => ({ number: index + 1 })),
+        berthPreference,
+        baseFare: quota === 'TATKAL' ? 1980 : 1580,
         fare: quota === 'TATKAL' ? 1980 : 1580,
+        demo: true,
       };
 
       addItem(ticketItem);
       setConfirmed(true);
-      addToast(`Booking confirmed! PNR: ${mockPnr}`, 'success');
+      addToast(`Sample reference created: ${mockPnr}. No seat was reserved.`, 'success');
       if (onComplete) onComplete(ticketItem);
     }
   };
@@ -81,9 +70,9 @@ export default function BookingWizard({ onComplete }) {
   };
 
   const steps = [
-    { num: 1, title: 'Corridor & Class' },
-    { num: 2, title: 'Passenger Profile' },
-    { num: 3, title: 'Security & Confirm' },
+    { num: 1, title: 'Train & class' },
+    { num: 2, title: 'Journey options' },
+    { num: 3, title: 'Sample review' },
   ];
 
   return (
@@ -95,10 +84,10 @@ export default function BookingWizard({ onComplete }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-zinc-800">
         <div>
           <span className="station-code-pill text-[10px] tracking-wider font-extrabold uppercase px-2.5 py-0.5">
-            EXPRESS RESERVATION WIZARD
+            BOOKING DEMONSTRATION
           </span>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white pt-1">
-            Instant PRS Journey Booking Flow
+            Try a sample booking
           </h2>
         </div>
 
@@ -117,7 +106,7 @@ export default function BookingWizard({ onComplete }) {
               >
                 {currentStep > s.num ? <CheckCircle2 size={14} /> : s.num}
               </div>
-              <span className="text-[11px] font-bold hidden md:inline text-slate-700 dark:text-zinc-300">
+                <span className="text-[11px] font-bold hidden md:inline text-slate-700 dark:text-zinc-300">
                 {s.title}
               </span>
               {idx < steps.length - 1 && (
@@ -206,10 +195,10 @@ export default function BookingWizard({ onComplete }) {
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-black text-sm">{c.code}</span>
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">AVAILABLE</span>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400">SAMPLE</span>
                     </div>
                     <div className="text-xs font-sans text-slate-600 dark:text-zinc-400 mt-1">{c.name}</div>
-                    <div className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1">{c.fare}</div>
+                    <div className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1">{c.fare} sample</div>
                   </button>
                 ))}
               </div>
@@ -217,64 +206,21 @@ export default function BookingWizard({ onComplete }) {
           </div>
         )}
 
-        {/* STEP 2: Passenger Details */}
+        {/* STEP 2: Non-sensitive demo options */}
         {currentStep === 2 && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 uppercase">
-                  Passenger Full Name (as per Govt ID)
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={passengerName}
-                    onChange={(e) => setPassengerName(e.target.value)}
-                    placeholder="e.g. Akshit Sharma"
-                    className="rail-input font-bold pl-9"
-                  />
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 uppercase">
-                  Age (Years)
-                </label>
-                <input
-                  type="text"
-                  maxLength={3}
-                  inputMode="numeric"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value.replace(/\D/g, ''))}
-                  placeholder="e.g. 21"
-                  className="rail-input font-bold"
-                />
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 uppercase">
-                  Mobile Number (SMS Alert)
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
+                  Passengers (sample only)
                 </label>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    maxLength={10}
-                    inputMode="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                    placeholder="10-digit mobile number"
-                    className="rail-input font-bold pl-9"
-                  />
-                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                </div>
+                <select value={passengerCount} onChange={(e) => setPassengerCount(e.target.value)} className="rail-input font-bold">
+                  {[1, 2, 3, 4, 5, 6].map((count) => <option key={count} value={count}>{count} {count === 1 ? 'passenger' : 'passengers'}</option>)}
+                </select>
               </div>
-
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 uppercase">
-                  Berth Preference
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
+                  Berth preference
                 </label>
                 <select
                   value={berthPreference}
@@ -289,10 +235,11 @@ export default function BookingWizard({ onComplete }) {
                 </select>
               </div>
             </div>
+            <p className="text-xs text-slate-600 dark:text-zinc-300 font-sans">This demonstration does not need a passenger name, phone number, or railway account credentials.</p>
           </div>
         )}
 
-        {/* STEP 3: Security & Verification */}
+        {/* STEP 3: Review a local simulation */}
         {currentStep === 3 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             {confirmed ? (
@@ -301,65 +248,22 @@ export default function BookingWizard({ onComplete }) {
                   <CheckCircle2 size={28} />
                 </div>
                 <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400">
-                  PRS Ticket Issued Successfully!
+                  Sample reference created
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-zinc-300 font-sans max-w-md mx-auto">
-                  Ticket has been added to your Journey Shopping Cart. You can print the digital boarding pass or inspect your allocated berth anytime.
+                  No seat was reserved and no real PNR was issued. A sample reference was added to the demo cart.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 uppercase">
-                    IRCTC Account Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={irctcPassword}
-                      onChange={(e) => setIrctcPassword(e.target.value)}
-                      placeholder="Enter account password"
-                      className="rail-input font-bold pl-9 pr-10"
-                    />
-                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-station-yellow transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  <span className="text-[10px] text-slate-400 block mt-1">Minimum 6 characters</span>
+              <div className="max-w-xl border-y border-slate-200 dark:border-zinc-700 py-4 space-y-3">
+                <p className="text-sm font-bold text-slate-800 dark:text-zinc-100">Review sample journey</p>
+                <div className="grid grid-cols-2 gap-y-2 text-xs text-slate-600 dark:text-zinc-300 font-sans">
+                  <span>Train</span><strong className="text-right">{trainNumber} · {trainName}</strong>
+                  <span>Journey</span><strong className="text-right">New Delhi → Mumbai Central</strong>
+                  <span>Class and quota</span><strong className="text-right">{travelClass} · {quota}</strong>
+                  <span>Passengers</span><strong className="text-right">{passengerCount}</strong>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 uppercase">
-                    4-Digit Security PIN
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPin ? 'text' : 'password'}
-                      maxLength={4}
-                      inputMode="numeric"
-                      value={securityPin}
-                      onChange={(e) => setSecurityPin(e.target.value.replace(/\D/g, ''))}
-                      placeholder="4-digit PIN"
-                      className="rail-input font-bold pl-9 pr-10 tracking-widest text-center"
-                    />
-                    <ShieldCheck size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPin(!showPin)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-station-yellow transition-colors"
-                      aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
-                    >
-                      {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  <span className="text-[10px] text-slate-400 block mt-1">4-digit numeric verification</span>
-                </div>
+                <p className="text-xs text-amber-800 dark:text-amber-200 font-sans">Demo only. This does not contact IRCTC or reserve a seat.</p>
               </div>
             )}
           </div>
@@ -387,10 +291,10 @@ export default function BookingWizard({ onComplete }) {
               (currentStep === 2 && !isStep2Valid) ||
               (currentStep === 3 && !isStep3Valid)
             }
-            dataCursor={currentStep === 3 ? 'CONFIRM' : 'NEXT'}
+            dataCursor={currentStep === 3 ? 'DEMO' : 'NEXT'}
             className="rail-btn-primary px-6 py-2.5 text-xs font-black gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
           >
-            <span>{currentStep === 3 ? 'Authorize & Issue PNR' : 'Continue to Next Step'}</span>
+            <span>{currentStep === 3 ? 'Create sample reference' : 'Continue to Next Step'}</span>
             <ArrowRight size={14} />
           </MagneticButton>
         )}

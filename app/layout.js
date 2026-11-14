@@ -2,11 +2,10 @@ import './globals.css';
 import 'leaflet/dist/leaflet.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AppProvider } from '@/context/AppContext';
-import CustomCursor from '@/components/CustomCursor';
 
 export const metadata = {
-  title: 'RailSync — Indian Railways Live Telemetry, PRS & GIS Engine',
-  description: 'Live train running status, physical permanent way track view, and coach reservation chart status for Indian Railways.',
+  title: 'RailSync — Indian train search and status',
+  description: 'Search train routes, check running status, view station boards, and explore sample PNR and fare tools.',
 };
 
 export const viewport = {
@@ -16,7 +15,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+  <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -31,10 +30,14 @@ export default function RootLayout({ children }) {
                     document.documentElement.classList.remove('dark');
                     document.documentElement.classList.add('light');
                     document.documentElement.style.colorScheme = 'light';
-                  } else {
+                  } else if (stored === 'dark') {
                     document.documentElement.classList.add('dark');
                     document.documentElement.classList.remove('light');
                     document.documentElement.style.colorScheme = 'dark';
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                    document.documentElement.style.colorScheme = 'light';
                   }
                 } catch (e) {}
               })();
@@ -43,7 +46,6 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <CustomCursor />
         <ThemeProvider>
           <AppProvider>
             {children}

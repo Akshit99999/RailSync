@@ -13,7 +13,6 @@ import {
   CheckCircle2, 
   Calendar, 
   Users, 
-  Sparkles,
   Ticket
 } from 'lucide-react';
 import DigitalTicketModal from './DigitalTicketModal';
@@ -58,14 +57,14 @@ export default function CartDrawer() {
   const handleCheckout = async () => {
     if (items.length === 0) return;
     setIsCheckingOut(true);
-    addToast('Processing IRCTC PRS electronic reservation...', 'info');
+    addToast('Completing the sample checkout. No real ticket will be reserved.', 'info');
 
     setTimeout(() => {
       setIsCheckingOut(false);
       const bookedTicket = items[0];
       const pnrGenerated = '2' + Math.floor(100000000 + Math.random() * 900000000);
-      setSelectedTicketForPass({ ...bookedTicket, pnr: pnrGenerated });
-      addToast(`Booking Confirmed! PNR Generated: ${pnrGenerated}`, 'success');
+      setSelectedTicketForPass({ ...bookedTicket, pnr: pnrGenerated, demo: true });
+      addToast(`Sample checkout complete. Demo reference: ${pnrGenerated}`, 'success');
       clearCart();
     }, 1200);
   };
@@ -85,7 +84,7 @@ export default function CartDrawer() {
           <div className="flex items-center gap-2">
             <ShoppingBag size={18} className="text-amber-500 dark:text-station-yellow" />
             <span className="text-sm font-bold text-slate-800 dark:text-zinc-100 tracking-wide">
-              JOURNEY RESERVATION CART ({items.length})
+              DEMO JOURNEY CART ({items.length})
             </span>
           </div>
 
@@ -108,6 +107,10 @@ export default function CartDrawer() {
           </div>
         </div>
 
+        <p className="px-5 py-2 border-b border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/30 text-[11px] text-amber-900 dark:text-amber-200 font-sans">
+          Demonstration only. No real fare is charged and no railway reservation is made.
+        </p>
+
         {/* Cart Items List */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {items.length === 0 ? (
@@ -117,7 +120,7 @@ export default function CartDrawer() {
               </div>
               <p className="text-sm font-bold text-slate-700 dark:text-zinc-300">Your Journey Cart is Empty</p>
               <p className="text-xs text-slate-500 dark:text-zinc-500 max-w-xs">
-                Search trains between any stations and click "Book / Add to Cart" to reserve berths.
+                Explore sample fares and booking steps. This demo does not reserve berths.
               </p>
             </div>
           ) : (
@@ -167,7 +170,7 @@ export default function CartDrawer() {
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Base Fare:</span>
+                  <span className="text-xs text-slate-500">Sample base fare:</span>
                   <span className="text-sm font-black text-slate-900 dark:text-zinc-100">
                     ₹{item.baseFare * (item.passengers?.length || 1)}
                   </span>
@@ -202,7 +205,7 @@ export default function CartDrawer() {
                 {activeCoupon && (
                   <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
                     <span className="flex items-center gap-1">
-                      <Sparkles size={12} /> {activeCoupon} ({couponDiscountPercent}% OFF applied)
+                      <Tag size={12} /> {activeCoupon} ({couponDiscountPercent}% sample discount)
                     </span>
                     <button
                       type="button"
@@ -223,19 +226,19 @@ export default function CartDrawer() {
           <div className="p-5 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 space-y-3">
             <div className="space-y-1.5 text-xs text-slate-600 dark:text-zinc-400">
               <div className="flex justify-between">
-                <span>Base Fares ({totals.totalPassengers} Pax):</span>
+                <span>Sample fares ({totals.totalPassengers} Pax):</span>
                 <span>₹{totals.totalBase}</span>
               </div>
               <div className="flex justify-between">
-                <span>Superfast Surcharge:</span>
+                <span>Sample superfast surcharge:</span>
                 <span>₹{totals.superfastCharge}</span>
               </div>
               <div className="flex justify-between">
-                <span>PRS Reservation Fee:</span>
+                <span>Sample reservation fee:</span>
                 <span>₹{totals.reservationFee}</span>
               </div>
               <div className="flex justify-between">
-                <span>GST (5% AC Rail):</span>
+                <span>Sample GST:</span>
                 <span>₹{totals.gst}</span>
               </div>
               {totals.discount > 0 && (
@@ -245,7 +248,7 @@ export default function CartDrawer() {
                 </div>
               )}
               <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 flex justify-between text-sm font-black text-slate-900 dark:text-zinc-100">
-                <span>Grand Total:</span>
+                <span>Estimated demo total:</span>
                 <span className="text-amber-600 dark:text-station-yellow text-base">₹{totals.grandTotal}</span>
               </div>
             </div>
@@ -258,12 +261,12 @@ export default function CartDrawer() {
               {isCheckingOut ? (
                 <>
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
-                  <span>ALLOCATING PRS BERTHS...</span>
+                  <span>COMPLETING SAMPLE CHECKOUT...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 size={16} />
-                  <span>CONFIRM & GENERATE E-TICKET</span>
+                  <span>COMPLETE DEMO CHECKOUT</span>
                 </>
               )}
             </button>

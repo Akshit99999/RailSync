@@ -220,7 +220,7 @@ export default function WatchlistDrawer({ isOpen, onClose, onTrackTrain, onNavig
               </div>
             ) : filteredTrains.length === 0 ? (
               <div className="py-12 text-center text-xs text-slate-500 dark:text-zinc-400 space-y-1">
-                <p className="font-bold">No saved trains matching "{searchQuery}"</p>
+                <p className="font-bold">No saved trains matching &quot;{searchQuery}&quot;</p>
                 <p>Try searching by 5-digit number, train name, or station code.</p>
               </div>
             ) : (
@@ -300,7 +300,7 @@ export default function WatchlistDrawer({ isOpen, onClose, onTrackTrain, onNavig
                 <div className="space-y-1">
                   <p className="font-black text-sm text-slate-800 dark:text-zinc-200">No Saved PNRs</p>
                   <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-xs">
-                    Search any 10-digit Indian Railways PNR and click "SAVE PNR" to pin your journey here.
+                    Search any 10-digit Indian Railways PNR and click &quot;SAVE PNR&quot; to pin your journey here.
                   </p>
                 </div>
 
@@ -314,7 +314,7 @@ export default function WatchlistDrawer({ isOpen, onClose, onTrackTrain, onNavig
               </div>
             ) : filteredPnrs.length === 0 ? (
               <div className="py-12 text-center text-xs text-slate-500 dark:text-zinc-400 space-y-1">
-                <p className="font-bold">No saved PNRs matching "{searchQuery}"</p>
+                <p className="font-bold">No saved PNRs matching &quot;{searchQuery}&quot;</p>
                 <p>Try searching by 10-digit PNR number or train name.</p>
               </div>
             ) : (

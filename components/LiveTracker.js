@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Train, RefreshCw, AlertCircle, Clock, Navigation, Gauge, MapPin, CheckCircle, Radio, Volume2, Star } from 'lucide-react';
 import RouteRibbon from './RouteRibbon';
@@ -30,7 +30,7 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Fetch live tracking data
-  const fetchLiveTracking = async (numberToFetch = trainNumber, date = dateSelection) => {
+  const fetchLiveTracking = useCallback(async (numberToFetch = trainNumber, date = dateSelection) => {
     if (!numberToFetch || numberToFetch.length !== 5) {
       setErrorMessage('Please enter a valid 5-digit train number.');
       return;
@@ -55,14 +55,14 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateSelection, trainNumber]);
 
   useEffect(() => {
     if (initialTrainNumber) {
       setTrainNumber(initialTrainNumber);
       fetchLiveTracking(initialTrainNumber, dateSelection);
     }
-  }, [initialTrainNumber]);
+  }, [initialTrainNumber, dateSelection, fetchLiveTracking]);
 
   // Auto-refresh interval every 30 seconds
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function LiveTracker({ initialTrainNumber = '12952', onSwitchToSe
       fetchLiveTracking(trainNumber, dateSelection);
     }, 30000);
     return () => clearInterval(interval);
-  }, [autoRefresh, trainNumber, dateSelection]);
+  }, [autoRefresh, trainNumber, dateSelection, fetchLiveTracking]);
 
   const handleManualSearch = (e) => {
     e.preventDefault();

@@ -40,17 +40,17 @@ export default function ControlDashboard() {
     : zoneStats.filter((z) => z.zone === selectedZone);
 
   return (
-    <div className="space-y-6 font-mono">
+    <div className="space-y-6">
       {/* Top Telemetry Header */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-zinc-900 to-black text-white border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 rounded-sm bg-[#203b53] text-white border border-[#41586a] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-station-yellow text-xs font-bold uppercase tracking-wider mb-1">
             <Activity size={16} />
-            <span>INDIAN RAILWAYS OPERATIONAL CONTROL DESK</span>
+            <span>Sample network overview</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">Executive Telemetry & Punctuality Center</h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Real-time multi-zonal performance monitoring, interlocking signal aspects, and network traffic status.
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Network operations</h2>
+          <p className="text-sm text-slate-200 mt-1">
+            Illustrative metrics from local sample data. This is not a live railway operations feed.
           </p>
         </div>
 

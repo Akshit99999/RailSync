@@ -29,7 +29,7 @@ export default function PnrSection() {
       const data = await res.json();
 
       if (data.success && data.data) {
-        setPnrData(data.data);
+        setPnrData({ ...data.data, source: data.source || 'unknown' });
         playRailwayChime();
       } else {
         setErrorMessage(data.error || 'PNR record not found or flushed from IRCTC PRS servers.');
@@ -65,9 +65,9 @@ export default function PnrSection() {
       {/* Search Input Box */}
       <div className="station-signboard p-4 sm:p-6 rounded-lg">
         <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-zinc-800">
-          <span className="station-code-pill text-xs">PRS ENQUIRY</span>
+          <span className="station-code-pill text-xs">PNR LOOKUP</span>
           <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-wide">
-            PASSENGER NAME RECORD (PNR) STATUS
+            Passenger name record status
           </h2>
         </div>
 
@@ -108,7 +108,7 @@ export default function PnrSection() {
           </div>
 
           <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-400">
-            <span>Need a test PNR?</span>
+            <span>Try the sample lookup:</span>
             <button
               type="button"
               onClick={handleTestPnr}
@@ -174,6 +174,11 @@ export default function PnrSection() {
       {pnrData && (
         <div className="space-y-6">
           <div className="pnr-chart-paper p-5 sm:p-7 rounded-lg space-y-6 shadow-md">
+            {pnrData.source !== 'railkit-live' && (
+              <div role="status" className="border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-sans font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+                Sample data for interface demonstration. It is not connected to the railway reservation system; booking, chart, and berth details are not real.
+              </div>
+            )}
             {/* Chart Header Stamp */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-zinc-800">
               <div className="space-y-1">
@@ -182,7 +187,7 @@ export default function PnrSection() {
                     PNR: {pnrData.pnr}
                   </span>
                   <span className="text-xs font-mono text-slate-500 dark:text-zinc-400">
-                    INDIAN RAILWAYS PASSENGER RESERVATION SYSTEM
+                    {pnrData.source === 'railkit-live' ? 'PROVIDER RESULT' : 'SIMULATED SAMPLE RESULT'}
                   </span>
                 </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-wide pt-1">
